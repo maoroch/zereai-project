@@ -1,3 +1,5 @@
+<!-- Created by developers: Salimov Ilyas (@ilyas_ones) -->
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -914,19 +916,32 @@
     <!-- Хедер -->
     <div class="header">
       <div>
-        <h1>Zere AI</h1>
+        <img src="assets/logo.svg" alt="" width="80">
       </div>
-      <div class="header-actions">
-        <button class="header-btn" onclick="zereAI.clearChat()">Очистить чат</button>
-        <button class="header-btn" onclick="zereAI.exportChat()">Экспорт</button>
-      </div>
+<div class="header-actions">
+    <button class="header-btn" onclick="announcementModal.show()">О проекте</button>
+    <button class="header-btn" onclick="zereAI.clearChat()">Очистить чат</button>
+    <button class="header-btn" onclick="zereAI.exportChat()">Экспорт</button>
+  </div>
     </div>
 
     <!-- Чат -->
     <div class="chat-container">
       <div class="messages" id="messages">
         <div class="message bot-message">
-          <div class="message-avatar">AI</div>
+          <div class="message-avatar"><!-- <img src="assets/icon.svg">--> <div class="ico"></div> </div>
+
+          <style>
+.ico {
+  width: 75%;      /* или другой размер */
+  height: 75%;
+  background-image: url('assets/icon.svg');
+  background-size: cover;
+  background-position: center;
+}
+
+          </style>
+
           <div class="message-content">
             Привет! Я Zere, ваш университетский ассистент. Чем могу помочь?
           </div>
@@ -1289,7 +1304,7 @@
             this.currentChatId = this.generateChatId();
             this.messagesContainer.innerHTML = `
                 <div class="message bot-message">
-                    <div class="message-avatar">AI</div>
+                    <div class="message-avatar"><img src="assets/icon.svg"></div>
                     <div class="message-content">
                         Привет! Я Zere, ваш университетский ассистент сделанный. Чем могу помочь?
                     </div>
@@ -1306,22 +1321,39 @@
             }
         }
 
-        exportChat() {
-            const history = JSON.parse(localStorage.getItem('chatHistory') || '{}');
-            const dataStr = JSON.stringify(history, null, 2);
-            const dataBlob = new Blob([dataStr], {type: 'application/json'});
-            
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(dataBlob);
-            link.download = `zere-ai-chats-${new Date().toISOString().split('T')[0]}.json`;
-            link.click();
-        }
+exportChat() {
+    const history = JSON.parse(localStorage.getItem('chatHistory') || '{}');
+    const currentChat = history[this.currentChatId];
+    
+    if (!currentChat) {
+        alert('Нет данных для экспорта');
+        return;
     }
+    
+    let textContent = `Чат: ${currentChat.title}\n`;
+    textContent += `Дата: ${new Date(currentChat.createdAt).toLocaleString('ru-RU')}\n`;
+    textContent += '─'.repeat(50) + '\n\n';
+    
+    currentChat.messages.forEach(message => {
+        const sender = message.role === 'user' ? 'Вы' : 'Zere AI';
+        const time = new Date(message.time).toLocaleTimeString('ru-RU');
+        textContent += `[${time}] ${sender}:\n${message.text}\n\n`;
+    });
+    
+    const dataBlob = new Blob([textContent], {type: 'text/plain;charset=utf-8'});
+    
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(dataBlob);
+    link.download = `zere-ai-chat-${currentChat.title.substring(0, 20)}.txt`;
+    link.click();
+}    }
 
     document.addEventListener('DOMContentLoaded', () => {
         window.zereAI = new ZereAI();
     });
   </script>
+  <script src="modalNews.js"></script>
+
   <script src="announcement.js"></script>
 </body>
 </html>

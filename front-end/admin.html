@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zere AI - Админ панель</title>
+  <link rel="stylesheet" href="style/admin.css">
+</head>
+<body>
+  <!-- LOGIN -->
+  <div class="login-container" id="loginScreen">
+    <div class="login-box">
+      <div class="login-logo">🔐</div>
+      <h1 class="login-title">Админ панель</h1>
+      <p class="login-subtitle">Введите пароль для доступа</p>
+      <input type="password" id="passwordInput" class="input-field" placeholder="Пароль">
+      <button class="login-btn" id="loginBtn">Войти</button>
+      <div class="error-message" id="errorMsg">Неверный пароль</div>
+    </div>
+  </div>
+
+  <!-- ADMIN PANEL -->
+  <div class="admin-panel" id="adminPanel">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">⚡</div>
+        <div class="sidebar-title">Zere AI Admin</div>
+      </div>
+      <ul class="nav-menu">
+        <li class="nav-item active" data-section="stats">📊 Статистика</li>
+        <li class="nav-item" data-section="groups">👥 Группы</li>
+        <li class="nav-item" data-section="documentation">📚 Документация</li>
+      </ul>
+      <div class="logout-section">
+        <button class="logout-btn" id="logoutBtn">Выйти</button>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <!-- STATS SECTION -->
+      <section class="section active" id="stats">
+        <div class="content-header">
+          <h1 class="content-title">Статистика</h1>
+          <p class="content-subtitle">Общая информация по всем группам</p>
+        </div>
+        
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-card-icon green">👥</div>
+            <div class="stat-card-value" id="totalGroups">0</div>
+            <div class="stat-card-label">Всего групп</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-icon blue">🎓</div>
+            <div class="stat-card-value" id="totalStudents">0</div>
+            <div class="stat-card-label">Всего студентов</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-icon green">✓</div>
+            <div class="stat-card-value" id="paidStudents">0</div>
+            <div class="stat-card-label">Оплатили</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-icon orange">⏳</div>
+            <div class="stat-card-value" id="unpaidStudents">0</div>
+            <div class="stat-card-label">Не оплатили</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- GROUPS SECTION -->
+      <section class="section" id="groups">
+        <div class="content-header">
+          <h1 class="content-title">Управление группами</h1>
+          <p class="content-subtitle">Добавляйте группы и отслеживайте оплату студентов</p>
+        </div>
+
+        <div class="action-bar">
+          <button class="btn" id="addGroupBtn">+ Добавить группу</button>
+          <button class="btn btn-secondary" id="expandAllBtn">Развернуть все</button>
+        </div>
+
+        <div class="groups-list" id="groupsContainer"></div>
+      </section>
+
+      <!-- DOCUMENTATION SECTION -->
+      <section class="section" id="documentation">
+        <div class="content-header">
+          <h1 class="content-title">Документация использования</h1>
+          <p class="content-subtitle">Руководство по работе с админ-панелью</p>
+        </div>
+
+        <div class="docs-container">
+          <!-- Быстрый старт -->
+          <div class="doc-card">
+            <div class="doc-header">
+              <div class="doc-icon">🚀</div>
+              <div class="doc-title">Быстрый старт</div>
+            </div>
+            <div class="doc-content">
+              <div class="doc-step">
+                <span class="doc-step-number">1</span>
+                Войдите в систему с паролем <strong>metu2024</strong>
+              </div>
+              <div class="doc-step">
+                <span class="doc-step-number">2</span>
+                Перейдите в раздел "Группы" для управления данными
+              </div>
+              <div class="doc-step">
+                <span class="doc-step-number">3</span>
+                Добавьте свою первую группу и студентов
+              </div>
+              <div class="doc-step">
+                <span class="doc-step-number">4</span>
+                Отслеживайте статистику оплат в реальном времени
+              </div>
+            </div>
+          </div>
+
+          <!-- Управление группами -->
+          <div class="doc-card">
+            <div class="doc-header">
+              <div class="doc-icon">👥</div>
+              <div class="doc-title">Управление группами</div>
+            </div>
+            <div class="doc-content">
+              <p><strong>Добавление группы:</strong></p>
+              <ul class="feature-list">
+                <li>Нажмите кнопку "Добавить группу"</li>
+                <li>Введите название группы (например: "ПИ 25-1.2")</li>
+                <li>Добавьте студентов с их данными</li>
+                <li>Сохраните группу</li>
+              </ul>
+
+              <p><strong>Редактирование группы:</strong></p>
+              <ul class="feature-list">
+                <li>Разверните нужную группу</li>
+                <li>Нажмите кнопку "Редактировать"</li>
+                <li>Внесите необходимые изменения</li>
+                <li>Сохраните изменения</li>
+              </ul>
+
+              <div class="tip-box">
+                <div class="tip-title">💡 Совет</div>
+                Используйте кнопку "Развернуть все" для одновременного просмотра всех групп
+              </div>
+            </div>
+          </div>
+
+          <!-- Управление студентами -->
+          <div class="doc-card">
+            <div class="doc-header">
+              <div class="doc-icon">🎓</div>
+              <div class="doc-title">Управление студентами</div>
+            </div>
+            <div class="doc-content">
+              <p><strong>Добавление студентов:</strong></p>
+              <ul class="feature-list">
+                <li>При создании/редактировании группы добавляйте студентов</li>
+                <li>Указывайте ФИО студента (обязательно)</li>
+                <li>Добавляйте номер телефона (опционально)</li>
+                <li>Отмечайте статус оплаты</li>
+              </ul>
+
+              <p><strong>Изменение статуса оплаты:</strong></p>
+              <ul class="feature-list">
+                <li>Разверните группу для просмотра студентов</li>
+                <li>Статус "Оплатил" отображается зеленым цветом</li>
+                <li>Статус "Не оплатил" отображается красным цветом</li>
+                <li>Для изменения статуса отредактируйте группу</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Статистика и отчеты -->
+          <div class="doc-card">
+            <div class="doc-header">
+              <div class="doc-icon">📊</div>
+              <div class="doc-title">Статистика и отчеты</div>
+            </div>
+            <div class="doc-content">
+              <p>В разделе "Статистика" доступна следующая информация:</p>
+              <ul class="feature-list">
+                <li>Общее количество групп</li>
+                <li>Общее количество студентов</li>
+                <li>Количество оплативших студентов</li>
+                <li>Количество студентов с задолженностью</li>
+                <li>Процент оплаты в реальном времени</li>
+              </ul>
+
+              <div class="tip-box">
+                <div class="tip-title">📈 Аналитика</div>
+                Статистика обновляется автоматически при каждом изменении данных
+              </div>
+            </div>
+          </div>
+
+          <!-- Советы и рекомендации -->
+          <div class="doc-card">
+            <div class="doc-header">
+              <div class="doc-icon">💡</div>
+              <div class="doc-title">Советы и рекомендации</div>
+            </div>
+            <div class="doc-content">
+              <ul class="feature-list">
+                <li>Регулярно сохраняйте изменения</li>
+                <li>Используйте понятные названия групп</li>
+                <li>Ведите актуальные контактные данные студентов</li>
+                <li>Своевременно обновляйте статусы оплаты</li>
+                <li>Для безопасности регулярно меняйте пароль доступа</li>
+              </ul>
+
+              <div class="tip-box">
+                <div class="tip-title">🔒 Безопасность</div>
+                Все данные хранятся локально в вашем браузере и защищены паролем
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- ADD/EDIT GROUP MODAL -->
+  <div class="modal" id="groupModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title" id="modalTitle">Добавить группу</h2>
+        <button class="close-btn" id="closeModalBtn">×</button>
+      </div>
+
+      <form id="groupForm">
+        <div class="form-group">
+          <label class="form-label">Название группы</label>
+          <input type="text" class="input-field" id="groupName" placeholder="Например: ПИ 25-1.2" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Студенты</label>
+          <div class="students-input-list" id="studentsList"></div>
+          <button type="button" class="btn btn-secondary add-student-btn" id="addStudentBtn">+ Добавить студента</button>
+        </div>
+
+        <div style="display: flex; gap: 12px; margin-top: 24px;">
+          <button type="submit" class="btn" style="flex: 1;">Сохранить</button>
+          <button type="button" class="btn btn-secondary" id="cancelBtn">Отмена</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="script/admin.js"></script>
+</body>
+</html>
