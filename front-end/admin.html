@@ -53,7 +53,7 @@
           <div class="stat-card">
             <div class="stat-card-icon blue">🎓</div>
             <div class="stat-card-value" id="totalStudents">0</div>
-            <div class="stat-card-label">Всего студентов</div>
+            <div class="stat-card-label">Всего студентов (платники)</div>
           </div>
           <div class="stat-card">
             <div class="stat-card-icon green">✓</div>
@@ -77,150 +77,248 @@
 
             <div class="action-bar">
                 <button class="btn" id="addGroupBtn">+ Добавить группу</button>
-                <button class="btn btn-secondary" id="excelModalBtn">📊 Excel Импорт/Экспорт</button>
+                <button class="btn btn-secondary" id="excelModalBtn">Excel Импорт/Экспорт</button>
                 <button class="btn btn-secondary" id="expandAllBtn">Развернуть все</button>
             </div>
 
         <div class="groups-list" id="groupsContainer"></div>
       </section>
 
-      <!-- DOCUMENTATION SECTION -->
-      <section class="section" id="documentation">
-        <div class="content-header">
-          <h1 class="content-title">Документация использования</h1>
-          <p class="content-subtitle">Руководство по работе с админ-панелью</p>
-        </div>
-
-        <div class="docs-container">
-          <!-- Быстрый старт -->
-          <div class="doc-card">
-            <div class="doc-header">
-              <div class="doc-icon">🚀</div>
-              <div class="doc-title">Быстрый старт</div>
-            </div>
-            <div class="doc-content">
-              <div class="doc-step">
-                <span class="doc-step-number">1</span>
-                Войдите в систему с паролем <strong>metu2024</strong>
-              </div>
-              <div class="doc-step">
-                <span class="doc-step-number">2</span>
-                Перейдите в раздел "Группы" для управления данными
-              </div>
-              <div class="doc-step">
-                <span class="doc-step-number">3</span>
-                Добавьте свою первую группу и студентов
-              </div>
-              <div class="doc-step">
-                <span class="doc-step-number">4</span>
-                Отслеживайте статистику оплат в реальном времени
-              </div>
-            </div>
-          </div>
-
-          <!-- Управление группами -->
-          <div class="doc-card">
-            <div class="doc-header">
-              <div class="doc-icon">👥</div>
-              <div class="doc-title">Управление группами</div>
-            </div>
-            <div class="doc-content">
-              <p><strong>Добавление группы:</strong></p>
-              <ul class="feature-list">
-                <li>Нажмите кнопку "Добавить группу"</li>
-                <li>Введите название группы (например: "ПИ 25-1.2")</li>
-                <li>Добавьте студентов с их данными</li>
-                <li>Сохраните группу</li>
-              </ul>
-
-              <p><strong>Редактирование группы:</strong></p>
-              <ul class="feature-list">
-                <li>Разверните нужную группу</li>
-                <li>Нажмите кнопку "Редактировать"</li>
-                <li>Внесите необходимые изменения</li>
-                <li>Сохраните изменения</li>
-              </ul>
-
-              <div class="tip-box">
-                <div class="tip-title">💡 Совет</div>
-                Используйте кнопку "Развернуть все" для одновременного просмотра всех групп
-              </div>
-            </div>
-          </div>
-
-          <!-- Управление студентами -->
-          <div class="doc-card">
-            <div class="doc-header">
-              <div class="doc-icon">🎓</div>
-              <div class="doc-title">Управление студентами</div>
-            </div>
-            <div class="doc-content">
-              <p><strong>Добавление студентов:</strong></p>
-              <ul class="feature-list">
-                <li>При создании/редактировании группы добавляйте студентов</li>
-                <li>Указывайте ФИО студента (обязательно)</li>
-                <li>Добавляйте номер телефона (опционально)</li>
-                <li>Отмечайте статус оплаты</li>
-              </ul>
-
-              <p><strong>Изменение статуса оплаты:</strong></p>
-              <ul class="feature-list">
-                <li>Разверните группу для просмотра студентов</li>
-                <li>Статус "Оплатил" отображается зеленым цветом</li>
-                <li>Статус "Не оплатил" отображается красным цветом</li>
-                <li>Для изменения статуса отредактируйте группу</li>
-              </ul>
-            </div>
-          </div>
-
-          <!-- Статистика и отчеты -->
-          <div class="doc-card">
-            <div class="doc-header">
-              <div class="doc-icon">📊</div>
-              <div class="doc-title">Статистика и отчеты</div>
-            </div>
-            <div class="doc-content">
-              <p>В разделе "Статистика" доступна следующая информация:</p>
-              <ul class="feature-list">
-                <li>Общее количество групп</li>
-                <li>Общее количество студентов</li>
-                <li>Количество оплативших студентов</li>
-                <li>Количество студентов с задолженностью</li>
-                <li>Процент оплаты в реальном времени</li>
-              </ul>
-
-              <div class="tip-box">
-                <div class="tip-title">📈 Аналитика</div>
-                Статистика обновляется автоматически при каждом изменении данных
-              </div>
-            </div>
-          </div>
-
-          <!-- Советы и рекомендации -->
-          <div class="doc-card">
-            <div class="doc-header">
-              <div class="doc-icon">💡</div>
-              <div class="doc-title">Советы и рекомендации</div>
-            </div>
-            <div class="doc-content">
-              <ul class="feature-list">
-                <li>Регулярно сохраняйте изменения</li>
-                <li>Используйте понятные названия групп</li>
-                <li>Ведите актуальные контактные данные студентов</li>
-                <li>Своевременно обновляйте статусы оплаты</li>
-                <li>Для безопасности регулярно меняйте пароль доступа</li>
-              </ul>
-
-              <div class="tip-box">
-                <div class="tip-title">🔒 Безопасность</div>
-                Все данные хранятся локально в вашем браузере и защищены паролем
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-    </main>
+<!-- DOCUMENTATION SECTION -->
+<section class="section" id="documentation">
+  <div class="content-header">
+    <h1 class="content-title">Документация использования</h1>
+    <p class="content-subtitle">Руководство по работе с админ-панелью ZERE AI</p>
   </div>
+
+  <div class="docs-container">
+    <!-- Быстрый старт -->
+    <div class="doc-card">
+      <div class="doc-header">
+        <div class="doc-icon">🚀</div>
+        <div class="doc-title">Быстрый старт</div>
+      </div>
+      <div class="doc-content">
+        <div class="doc-step">
+          <span class="doc-step-number">1</span>
+          Войдите в систему с паролем <strong>metu2024</strong>
+        </div>
+        <div class="doc-step">
+          <span class="doc-step-number">2</span>
+          Перейдите в раздел "Группы" для управления данными
+        </div>
+        <div class="doc-step">
+          <span class="doc-step-number">3</span>
+          Добавьте свою первую группу и студентов
+        </div>
+        <div class="doc-step">
+          <span class="doc-step-number">4</span>
+          Отслеживайте статистику оплат в реальном времени
+        </div>
+      </div>
+    </div>
+
+    <!-- Управление группами -->
+    <div class="doc-card">
+      <div class="doc-header">
+        <div class="doc-icon">👥</div>
+        <div class="doc-title">Управление группами</div>
+      </div>
+      <div class="doc-content">
+        <p><strong>Добавление группы:</strong></p>
+        <ul class="feature-list">
+          <li>Нажмите кнопку "Добавить группу"</li>
+          <li>Введите название группы (например: "ПИ 25-1.2")</li>
+          <li>Добавьте студентов с их данными</li>
+          <li>Сохраните группу</li>
+        </ul>
+
+        <p><strong>Редактирование группы:</strong></p>
+        <ul class="feature-list">
+          <li>Разверните нужную группу</li>
+          <li>Нажмите кнопку "Редактировать"</li>
+          <li>Внесите необходимые изменения</li>
+          <li>Сохраните изменения</li>
+        </ul>
+
+        <div class="tip-box">
+          <div class="tip-title">💡 Совет</div>
+          Используйте кнопку "Развернуть все" для одновременного просмотра всех групп
+        </div>
+      </div>
+    </div>
+
+    <!-- Управление студентами -->
+    <div class="doc-card">
+      <div class="doc-header">
+        <div class="doc-icon">🎓</div>
+        <div class="doc-title">Управление студентами</div>
+      </div>
+      <div class="doc-content">
+        <p><strong>Обязательные поля для студентов:</strong></p>
+        <ul class="feature-list">
+          <li><strong>ФИО студента</strong> - обязательно для заполнения</li>
+          <li><strong>Статус оплаты</strong> - автоматически определяется при импорте</li>
+        </ul>
+
+        <p><strong>Дополнительные поля:</strong></p>
+        <ul class="feature-list">
+          <li><strong>Номер телефона</strong> - опционально, для связи</li>
+          <li><strong>Форма оплаты</strong> - указывается при импорте из Excel</li>
+        </ul>
+
+        <p><strong>Изменение статуса оплаты:</strong></p>
+        <ul class="feature-list">
+          <li>Разверните группу для просмотра студентов</li>
+          <li>Статус "Оплатил" отображается зеленым цветом</li>
+          <li>Статус "Не оплатил" отображается красным цветом</li>
+          <li>Для изменения статуса отредактируйте группу</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Импорт и экспорт данных -->
+    <div class="doc-card">
+      <div class="doc-header">
+        <div class="doc-icon">📁</div>
+        <div class="doc-title">Импорт и экспорт данных</div>
+      </div>
+      <div class="doc-content">
+        <p><strong>Импорт из Excel:</strong></p>
+        <ul class="feature-list">
+          <li>Нажмите кнопку "Excel Импорт/Экспорт" в разделе групп</li>
+          <li>Выберите файл Excel для загрузки</li>
+          <li>Система автоматически определит группы и студентов</li>
+          <li>Обязательные колонки в Excel: <strong>"Группа"</strong> и <strong>"ФИО студента"</strong></li>
+          <li>Дополнительные колонки: "Форма оплаты", "Моб. Телефон", "Телефон"</li>
+        </ul>
+
+        <p><strong>Требования к Excel файлу:</strong></p>
+        <ul class="feature-list">
+          <li>Формат: .xlsx или .xls</li>
+          <li>Максимальный размер: 10MB</li>
+          <li>Первая строка должна содержать заголовки колонок</li>
+          <li>Обязательные колонки: <strong>Группа</strong>, <strong>ФИО студента</strong></li>
+          <li>Колонка "Форма оплаты" определяет статус оплаты автоматически</li>
+        </ul>
+
+        <p><strong>Экспорт в Excel:</strong></p>
+        <ul class="feature-list">
+          <li>Нажмите "Excel Импорт/Экспорт" → "Экспорт в Excel"</li>
+          <li>Скачайте полный отчет по всем группам</li>
+          <li>Файл содержит: №, Группа, ФИО студента, Статус оплаты, Телефон, Дата добавления</li>
+        </ul>
+
+        <div class="tip-box">
+          <div class="tip-title">📋 Пример структуры Excel</div>
+          Обязательные колонки: <strong>Группа</strong> | <strong>ФИО студента</strong> | Форма оплаты | Моб. Телефон
+        </div>
+      </div>
+    </div>
+
+    <!-- Автоматическое определение оплаты -->
+    <div class="doc-card">
+      <div class="doc-header">
+        <div class="doc-icon">⚡</div>
+        <div class="doc-title">Автоматическое определение оплаты</div>
+      </div>
+      <div class="doc-content">
+        <p><strong>При импорте из Excel:</strong></p>
+        <ul class="feature-list">
+          <li><strong>Бесплатники</strong> - автоматически получают статус "Оплачено"</li>
+          <li><strong>Платники</strong> - автоматически получают статус "Не оплачено"</li>
+          <li>Система анализирует колонку "Форма оплаты"</li>
+        </ul>
+
+        <p><strong>Ключевые слова для определения:</strong></p>
+        <ul class="feature-list">
+          <li><strong>Оплачено:</strong> "бесплатно", "free"</li>
+          <li><strong>Не оплачено:</strong> "платно", "оплачено", и другие значения</li>
+        </ul>
+
+        <div class="tip-box">
+          <div class="tip-title">🔄 Логика работы</div>
+          Все платники при импорте получают статус "Не оплачено" для последующего ручного контроля оплат
+        </div>
+      </div>
+    </div>
+
+    <!-- Статистика и отчеты -->
+    <div class="doc-card">
+      <div class="doc-header">
+        <div class="doc-icon">📊</div>
+        <div class="doc-title">Статистика и отчеты</div>
+      </div>
+      <div class="doc-content">
+        <p>В разделе "Статистика" доступна следующая информация:</p>
+        <ul class="feature-list">
+          <li>Общее количество групп</li>
+          <li>Общее количество студентов</li>
+          <li>Количество оплативших студентов</li>
+          <li>Количество студентов с задолженностью</li>
+          <li>Процент оплаты в реальном времени</li>
+        </ul>
+
+        <div class="tip-box">
+          <div class="tip-title">📈 Аналитика</div>
+          Статистика обновляется автоматически при каждом изменении данных
+        </div>
+      </div>
+    </div>
+
+    <!-- Безопасность и данные -->
+    <div class="doc-card">
+      <div class="doc-header">
+        <div class="doc-icon">🔒</div>
+        <div class="doc-title">Безопасность и обработка данных</div>
+      </div>
+      <div class="doc-content">
+        <p><strong>Защита данных:</strong></p>
+        <ul class="feature-list">
+          <li>Доступ к панели защищен паролем</li>
+          <li>Все данные передаются по защищенному соединению</li>
+          <li>Автоматическая фильтрация конфиденциальных данных (ИИН)</li>
+        </ul>
+
+        <p><strong>Обработка персональных данных:</strong></p>
+        <ul class="feature-list">
+          <li>Система автоматически игнорирует колонки с ИИН</li>
+          <li>Хранятся только необходимые данные: ФИО, телефон, статус оплаты</li>
+          <li>Возможность массового управления через Excel</li>
+        </ul>
+
+        <div class="tip-box">
+          <div class="tip-title">🛡️ Конфиденциальность</div>
+          Система разработана с учетом требований к защите персональных данных
+        </div>
+      </div>
+    </div>
+
+    <!-- Советы и рекомендации -->
+    <div class="doc-card">
+      <div class="doc-header">
+        <div class="doc-icon">💡</div>
+        <div class="doc-title">Советы и рекомендации</div>
+      </div>
+      <div class="doc-content">
+        <ul class="feature-list">
+          <li>Регулярно сохраняйте изменения</li>
+          <li>Используйте понятные названия групп</li>
+          <li>Ведите актуальные контактные данные студентов</li>
+          <li>Своевременно обновляйте статусы оплаты</li>
+          <li>Используйте Excel импорт для массового добавления</li>
+          <li>Экспортируйте данные для создания отчетов</li>
+          <li>Для безопасности регулярно меняйте пароль доступа</li>
+        </ul>
+
+        <div class="tip-box">
+          <div class="tip-title">🚀 Производительность</div>
+          Система оптимизирована для работы с большими объемами данных (60+ студентов в группе)
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 
   <!-- ADD/EDIT GROUP MODAL -->
   <div class="modal" id="groupModal">
@@ -251,5 +349,6 @@
   </div>
 <script src="script/excelModal.js"></script>
   <script src="script/admin.js"></script>
+  <script src="script/selectorGroup.js"></script>
 </body>
 </html>
