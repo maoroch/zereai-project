@@ -1,20 +1,36 @@
 import express from 'express';
 import cors from 'cors';
 import { askZere } from './ai/app.js';
-
 import dotenv from "dotenv";
 import session from "express-session";
 import crmCrud from "./CRM/crud.js";
+import excelRouter from './CRM/excel.js';
+import gradient from 'gradient-string';
 
 const app = express();
-app.use(cors());
-app.use(express.json());
 
+// --- Настройка CORS первым делом ---
+app.use(cors({
+  origin: true,
+  credentials: true
+}));
+
+// --- Парсинг JSON ---
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 dotenv.config();
 
+// --- Сессии ---
+app.use(
+  session({
+    secret: "curator-secret",
+    resave: false,
+    saveUninitialized: false,
+  })
+);
 
-// Health check endpoint
+// --- Health check endpoint ---
 app.get('/health', (req, res) => {
     res.json({ 
         status: 'ok', 
@@ -23,7 +39,7 @@ app.get('/health', (req, res) => {
     });
 });
 
-// AI endpoint
+// --- AI endpoint ---
 app.post('/ai', async (req, res) => {
     const { question } = req.body;
     
@@ -54,28 +70,27 @@ app.post('/ai', async (req, res) => {
     }
 });
 
-
-// --- Middleware ---
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-
-// --- Сессии ---
-app.use(
-  session({
-    secret: "curator-secret",
-    resave: false,
-    saveUninitialized: false,
-  })
-);
-
-
+// --- Маршруты ---
 app.use("/crmCrud", crmCrud);
-// В Express
 
+// Debug middleware для excelRouter
+app.use('/excelRouter', (req, res, next) => {
+  console.log(`📨 Excel Router: ${req.method} ${req.path}`);
+  next();
+});
 
-import gradient from 'gradient-string';
+app.use('/excelRouter', excelRouter);
 
+// --- 404 Handler (ИСПРАВЛЕННЫЙ) ---
+app.use((req, res) => {
+  console.log(`❌ 404: ${req.method} ${req.originalUrl}`);
+  res.status(404).json({ 
+    success: false, 
+    error: `Route ${req.method} ${req.originalUrl} not found` 
+  });
+});
+
+// --- Баннер ---
 const banner = `
 ===============================
        Zere AI — © 2025 Ilyas Salimov
@@ -90,16 +105,12 @@ Team:
 ===============================
 `;
 
-// Вывод градиентом
 console.log(gradient.morning(banner));
-
-
-
-
 
 app.listen(3000, () => {
     console.log('🚀 Server running on http://localhost:3000');
     console.log('📋 Available endpoints:');
     console.log('   GET  http://localhost:3000/health');
     console.log('   POST http://localhost:3000/ai');
+    console.log('   POST http://localhost:3000/excelRouter/upload-groups');
 });

@@ -8,6 +8,7 @@
     "express": "^5.1.0",
     "express-session": "^1.18.2",
     "gradient-string": "^3.0.0",
+    "multer": "^2.0.2",
     "node-fetch": "^3.3.2",
     "xlsx": "^0.18.5"
   }
