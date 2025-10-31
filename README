@@ -1,0 +1,99 @@
+# Zere AI — Back-end
+
+Zere AI — это серверная часть проекта на **Express.js**, обеспечивающая работу AI-эндпоинта, CRM CRUD, сессии и health check.  
+
+Фронтенд проекта реализован на простом HTML и может быть запущен через **Live Server** для тестирования интерфейса.
+
+---
+
+## 🚀 Установка и запуск
+
+1. **Клонируйте репозиторий**:
+
+```
+git clone https://github.com/maoroch/smartAdvisor.git
+cd <your-repo-folder>
+Установите зависимости:
+
+
+
+npm install
+Создайте .env файл (если нужно для API ключей или конфигурации):
+
+env
+
+# пример
+SUPABASE_URL=your_supabase_url
+SUPABASE_KEY=your_supabase_key
+SESSION_SECRET=your_secret_key
+Запустите сервер:
+
+
+
+node server.js
+После запуска вы увидите в консоли красивый баннер с градиентом и эмодзи, а также информацию о доступных эндпоинтах.
+
+📋 Доступные эндпоинты
+Метод	Путь	Описание
+GET	/health	Проверка состояния сервера
+POST	/ai	AI-эндпоинт, принимает JSON с полем question
+ALL	/crmCrud	CRUD операции с CRM
+
+Пример запроса к AI:
+
+
+curl -X POST http://localhost:3000/ai \
+-H "Content-Type: application/json" \
+-d '{"question": "Привет, Zere AI!"}'
+Ответ:
+
+json
+
+{
+  "success": true,
+  "answer": "...ответ AI...",
+  "question": "Привет, Zere AI!",
+  "timestamp": "2025-10-31T12:34:56.789Z"
+}
+⚡ Фронтенд
+Фронтенд проекта реализован на HTML. Для быстрого тестирования можно использовать Live Server в VS Code:
+
+Откройте папку фронтенда в VS Code.
+
+Кликните правой кнопкой на index.html → Open with Live Server.
+
+Сервер откроет страницу в браузере, с которой можно обращаться к back-end эндпоинтам.
+
+📦 Используемые пакеты
+express — серверная платформа
+
+cors — обработка CORS
+
+express-session — сессии
+
+dotenv — переменные окружения
+
+chalk — цветной вывод в консоль
+
+gradient-string — градиенты для консоли
+
+@supabase/supabase-js — работа с Supabase
+
+xlsx — обработка Excel
+
+node-fetch — HTTP-запросы
+
+💡 Примечания
+Сервер слушает порт 3000. При необходимости измените в server.js.
+
+Баннер с градиентом и эмодзи выводится при старте сервера для “фирменного стиля”.
+
+Рекомендовано использовать Node.js v18+ и NPM v9+.
+
+Автор: Ilyas Salimov
+Проект Zere AI — © 2025
+
+## 📝 Лицензия
+
+См. [LICENSE](./LICENSE) для деталей.  
+Все права защищены © 2025 Ilyas Salimov.

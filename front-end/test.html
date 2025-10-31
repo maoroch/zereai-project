@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <input type="file" id="excelFile" accept=".xlsx" />
+<button id="uploadBtn">Загрузить Excel</button>
+
+<script>
+document.getElementById('uploadBtn').addEventListener('click', async () => {
+  const fileInput = document.getElementById('excelFile');
+  const file = fileInput.files[0];
+  if (!file) return alert('Выберите файл!');
+
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const res = await fetch('/excel/import', {
+    method: 'POST',
+    body: formData,
+  });
+
+  const result = await res.json();
+  if (res.ok) alert('Файл успешно импортирован!');
+  else alert('Ошибка: ' + result.error);
+});
+</script>
+
+</body>
+</html>

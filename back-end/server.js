@@ -6,7 +6,6 @@ import dotenv from "dotenv";
 import session from "express-session";
 import crmCrud from "./CRM/crud.js";
 
-
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -72,6 +71,30 @@ app.use(
 
 
 app.use("/crmCrud", crmCrud);
+// В Express
+
+
+import gradient from 'gradient-string';
+
+const banner = `
+===============================
+       Zere AI — © 2025 Ilyas Salimov
+       All rights reserved.
+       Telegram: @Ilyas_ones
+
+Team:
+  🚀 CEO, CTO                     — Ilyas Salimov
+  🤖 Back-end, Telegram Developer — Borodin Alexander, Ali Duisen
+
+       ✨ Crafted with passion ✨
+===============================
+`;
+
+// Вывод градиентом
+console.log(gradient.morning(banner));
+
+
+
 
 
 app.listen(3000, () => {
