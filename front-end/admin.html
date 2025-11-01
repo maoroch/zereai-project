@@ -7,18 +7,6 @@
   <link rel="stylesheet" href="style/admin.css">
 </head>
 <body>
-  <!-- LOGIN -->
-  <div class="login-container" id="loginScreen">
-    <div class="login-box">
-      <div class="login-logo">🔐</div>
-      <h1 class="login-title">Админ панель</h1>
-      <p class="login-subtitle">Введите пароль для доступа</p>
-      <input type="password" id="passwordInput" class="input-field" placeholder="Пароль">
-      <button class="login-btn" id="loginBtn">Войти</button>
-      <div class="error-message" id="errorMsg">Неверный пароль</div>
-    </div>
-  </div>
-
   <!-- ADMIN PANEL -->
   <div class="admin-panel" id="adminPanel">
     <aside class="sidebar">
@@ -75,25 +63,25 @@
           <p class="content-subtitle">Добавляйте группы и отслеживайте оплату студентов</p>
         </div>
 
-            <div class="action-bar">
-                <button class="btn" id="addGroupBtn">+ Добавить группу</button>
-                <button class="btn btn-secondary" id="excelModalBtn">Excel Импорт/Экспорт</button>
-                <button class="btn btn-secondary" id="expandAllBtn">Развернуть все</button>
-            </div>
+        <div class="action-bar">
+          <button class="btn" id="addGroupBtn">+ Добавить группу</button>
+          <button class="btn btn-secondary" id="excelModalBtn">Excel Импорт/Экспорт</button>
+          <button class="btn btn-secondary" id="expandAllBtn">Развернуть все</button>
+        </div>
 
         <div class="groups-list" id="groupsContainer"></div>
       </section>
 
-<!-- DOCUMENTATION SECTION -->
-<section class="section" id="documentation">
-  <div class="content-header">
-    <h1 class="content-title">Документация использования</h1>
-    <p class="content-subtitle">Руководство по работе с админ-панелью ZERE AI</p>
-  </div>
+      <!-- DOCUMENTATION SECTION -->
+      <section class="section" id="documentation">
+        <div class="content-header">
+          <h1 class="content-title">Документация использования</h1>
+          <p class="content-subtitle">Руководство по работе с админ-панелью ZERE AI</p>
+        </div>
 
-  <div class="docs-container">
-    <!-- Быстрый старт -->
-    <div class="doc-card">
+        <div class="docs-container">
+          <!-- Быстрый старт -->
+   <div class="doc-card">
       <div class="doc-header">
         <div class="doc-icon">🚀</div>
         <div class="doc-title">Быстрый старт</div>
@@ -101,7 +89,7 @@
       <div class="doc-content">
         <div class="doc-step">
           <span class="doc-step-number">1</span>
-          Войдите в систему с паролем <strong>metu2024</strong>
+          Войдите в систему с паролем <strong>metu2025</strong>
         </div>
         <div class="doc-step">
           <span class="doc-step-number">2</span>
@@ -275,7 +263,7 @@
       <div class="doc-content">
         <p><strong>Защита данных:</strong></p>
         <ul class="feature-list">
-          <li>Доступ к панели защищен паролем</li>
+          <li>Доступ к административной панели защищён паролем и реализован с помощью сессионной авторизации (Express Session)</li>
           <li>Все данные передаются по защищенному соединению</li>
           <li>Автоматическая фильтрация конфиденциальных данных (ИИН)</li>
         </ul>
@@ -319,6 +307,8 @@
     </div>
   </div>
 </section>
+    </main>
+  </div>
 
   <!-- ADD/EDIT GROUP MODAL -->
   <div class="modal" id="groupModal">
@@ -347,8 +337,60 @@
       </form>
     </div>
   </div>
-<script src="script/excelModal.js"></script>
+
+  <script src="script/excelModal.js"></script>
   <script src="script/admin.js"></script>
   <script src="script/selectorGroup.js"></script>
+
+  <script>
+    // Проверка авторизации при загрузке админ-панели
+    document.addEventListener('DOMContentLoaded', async function() {
+      const SERVER_BASE_URL = 'http://localhost:3000';
+
+      try {
+        // Проверяем авторизацию через сервер
+        const res = await fetch(`${SERVER_BASE_URL}/auth/check`, {
+          method: 'GET',
+          credentials: 'include'
+        });
+
+        if (!res.ok) {
+          // Если не авторизован, перенаправляем на страницу входа
+          window.location.href = 'login.html';
+          return;
+        }
+
+        const data = await res.json();
+        if (!data.authenticated) {
+          window.location.href = 'login.html';
+          return;
+        }
+
+        // Если авторизован, показываем админ-панель
+        document.getElementById('adminPanel').classList.add('active');
+        
+        // Инициализируем админ-панель
+        adminPanel = new AdminPanel();
+
+      } catch (error) {
+        console.error('Auth check error:', error);
+        window.location.href = 'login.html';
+      }
+      
+      // Обработчик кнопки выхода
+      document.getElementById('logoutBtn').addEventListener('click', async function() {
+        try {
+          await fetch(`${SERVER_BASE_URL}/auth/logout`, {
+            method: 'POST',
+            credentials: 'include'
+          });
+          window.location.href = 'login.html';
+        } catch (error) {
+          console.error('Logout error:', error);
+          window.location.href = 'login.html';
+        }
+      });
+    });
+  </script>
 </body>
 </html>

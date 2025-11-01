@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zere AI - Авторизация</title>
+  <link rel="stylesheet" href="style/admin.css">
+</head>
+<body>
+  <!-- LOGIN SCREEN -->
+  <div class="login-container" id="loginScreen">
+    <div class="login-box">
+      <div class="login-logo">🔐</div>
+      <h1 class="login-title">Админ панель</h1>
+      <p class="login-subtitle">Введите пароль для доступа</p>
+      <form id="loginForm">
+        <input type="password" id="passwordInput" class="input-field" placeholder="Пароль" required>
+        <button type="submit" class="login-btn" id="loginBtn">Войти</button>
+      </form>
+      <div class="error-message" id="errorMsg">Неверный пароль</div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const loginForm = document.getElementById('loginForm');
+      const passwordInput = document.getElementById('passwordInput');
+      const errorMsg = document.getElementById('errorMsg');
+
+      // ⚠️ ВАЖНО: Используйте полный URL вашего сервера
+      const SERVER_BASE_URL = 'http://localhost:3000';
+
+      const login = async (e) => {
+        console.log('=== НАЧАЛО АВТОРИЗАЦИИ ===');
+        e.preventDefault();
+        
+        const password = passwordInput.value.trim();
+        if (!password) {
+          errorMsg.textContent = 'Введите пароль';
+          errorMsg.classList.add('show');
+          return;
+        }
+
+        try {
+          console.log('🔐 Отправка запроса на авторизацию...');
+          
+          // ⚠️ ИСПОЛЬЗУЙТЕ ПОЛНЫЙ URL!
+          const loginRes = await fetch(`${SERVER_BASE_URL}/auth/login`, {
+            method: 'POST',
+            headers: { 
+              'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+            body: JSON.stringify({ password })
+          });
+
+          console.log('📨 Статус ответа login:', loginRes.status);
+          
+          // Проверяем, что ответ валидный JSON
+          if (!loginRes.ok) {
+            throw new Error(`HTTP error! status: ${loginRes.status}`);
+          }
+          
+          const loginData = await loginRes.json();
+          console.log('Ответ сервера login:', loginData);
+
+          if (loginData.success) {
+            console.log('✅ Авторизация успешна, проверяем сессию...');
+            
+            setTimeout(async () => {
+              console.log('🔍 Отправка запроса на проверку сессии...');
+              
+              // ⚠️ ИСПОЛЬЗУЙТЕ ПОЛНЫЙ URL!
+              const checkRes = await fetch(`${SERVER_BASE_URL}/auth/check`, {
+                method: 'GET',
+                credentials: 'include',
+                headers: {
+                  'Cache-Control': 'no-cache'
+                }
+              });
+              
+              console.log('📨 Статус ответа check:', checkRes.status);
+              
+              if (!checkRes.ok) {
+                throw new Error(`HTTP error! status: ${checkRes.status}`);
+              }
+              
+              const checkData = await checkRes.json();
+              console.log('🔍 Результат проверки сессии:', checkData);
+              
+              if (checkData.authenticated) {
+                console.log('🎉 УСПЕХ! Сессия работает. Перенаправляем на admin.html');
+                window.location.href = 'admin.html';
+              } else {
+                console.log('❌ Сессия не работает после логина');
+                errorMsg.textContent = 'Проблема с сессией. Попробуйте снова.';
+                errorMsg.classList.add('show');
+              }
+            }, 500);
+          } else {
+            console.log('❌ Ошибка авторизации');
+            errorMsg.textContent = loginData.error || 'Неверный пароль';
+            errorMsg.classList.add('show');
+            passwordInput.value = '';
+            passwordInput.focus();
+          }
+        } catch (err) {
+          console.error('💥 Ошибка:', err);
+          if (err.message.includes('Failed to fetch')) {
+            errorMsg.textContent = 'Не удалось подключиться к серверу. Убедитесь, что сервер запущен на localhost:3000';
+          } else {
+            errorMsg.textContent = `Ошибка: ${err.message}`;
+          }
+          errorMsg.classList.add('show');
+        }
+      };
+
+      loginForm.addEventListener('submit', login);
+      passwordInput.focus();
+      
+      // Проверяем доступность сервера при загрузке
+      console.log('🔍 Проверка доступности сервера...');
+      fetch(`${SERVER_BASE_URL}/health`)
+        .then(res => {
+          if (res.ok) {
+            console.log('✅ Сервер доступен');
+          } else {
+            console.log('❌ Сервер недоступен');
+          }
+        })
+        .catch(err => {
+          console.error('❌ Сервер не отвечает:', err);
+        });
+    });
+  </script>
+</body>
+</html>

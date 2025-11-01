@@ -1,8 +1,3 @@
-// script/admin.js
-const CONFIG = {
-  PASSWORD: 'metu2024'
-};
-
 const BACKEND_URL = 'http://localhost:3000/crmCrud';
 
 class AdminPanel {
@@ -14,7 +9,6 @@ class AdminPanel {
     }
 
     init() {
-        this.setupAuth();
         this.setupNavigation();
         this.setupModals();
         this.loadData();
@@ -48,37 +42,6 @@ class AdminPanel {
             console.error('Error loading data:', e);
             alert('Ошибка загрузки данных. Проверьте подключение к серверу.');
         }
-    }
-
-    setupAuth() {
-        const loginBtn = document.getElementById('loginBtn');
-        const passwordInput = document.getElementById('passwordInput');
-        const loginScreen = document.getElementById('loginScreen');
-        const adminPanel = document.getElementById('adminPanel');
-        const errorMsg = document.getElementById('errorMsg');
-        const logoutBtn = document.getElementById('logoutBtn');
-
-        const login = () => {
-            if (passwordInput.value === CONFIG.PASSWORD) {
-                loginScreen.classList.add('hidden');
-                adminPanel.classList.add('active');
-            } else {
-                errorMsg.classList.add('show');
-                passwordInput.value = '';
-                setTimeout(() => errorMsg.classList.remove('show'), 3000);
-            }
-        };
-
-        loginBtn.addEventListener('click', login);
-        passwordInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') login();
-        });
-
-        logoutBtn.addEventListener('click', () => {
-            adminPanel.classList.remove('active');
-            loginScreen.classList.remove('hidden');
-            passwordInput.value = '';
-        });
     }
 
     setupNavigation() {
@@ -418,6 +381,3 @@ class AdminPanel {
 }
 
 let adminPanel;
-document.addEventListener('DOMContentLoaded', () => {
-    adminPanel = new AdminPanel();
-});

@@ -3,6 +3,7 @@ import { supabase } from "../services/supabaseService.js";
 
 const crudCurator = express.Router();
 
+
 // 🔒 Простая система очередей на основе Mutex
 class RequestQueue {
   constructor() {
@@ -253,5 +254,7 @@ crudCurator.post("/students/delete-group/:id", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
+
 
 export default crudCurator;

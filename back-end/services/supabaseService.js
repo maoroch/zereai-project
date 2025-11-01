@@ -39,3 +39,21 @@ export const testConnection = async () => {
     return false;
   }
 };
+
+
+
+// --- Авторизация пользователя ---
+export const loginUser = async (email, password) => {
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
+
+  if (error) {
+    console.error("❌ Login failed:", error.message);
+    throw new Error(error.message);
+  }
+
+  console.log("✅ Login successful for:", data.user.email);
+  return data;
+};
