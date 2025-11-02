@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "cryptic-episode-476814-g2",
+  "private_key_id": "88ac169c4d897bc3c099bf6b9f5ab0c7a18343ac",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCl3XpsrkMtd5vx\ni/baQRET/PDe/3LlmNVvt8ai3DPGkWPkuOmzqJDK7d0uSGvmLv3hZ6ZUohcu2reW\n0cGEH1n5lZ59JXYRLUPgHGeZe5WwWlzRQlZPxWvXnzDwHNPRedj44abODxWSh7Di\n6RuRPCIzDtqevi4w2bi5+wuAWxA6RRmwn20g/0IKOho58OcRMy7ySisxcrkyJMef\nIyk5OcwOOQGOy7SsAbQFI+rz4Pw52wc6baY44FzNTIyyGXrR1E9HZBrnsEHcPIzc\n5t4vie8+k7K0z1TdL9oci5yQ6d6l3ICfSfCZNZk3tQxy4QbN4J+AjR5ztFhyb0SQ\nJvI0c4O9AgMBAAECggEAHksMnIPZRhkV1LBk9eizV0y3q2rJT9CxjrVoZH9GP4p3\nTaNOH592TnHSFy1n84L6oGvfT47JICgXJscJinl1Y+WlLCMm5K05O9nEPB57sNlY\nIWn1vJ0IfLmY5QnGz/fqnk4MOo87t+brcg30GHr8ngmk+SAv7IEfQWxt5dP760A/\nRUnS+6g6odvzzL9LERIIU/St5lzMV48iGuED0u6eL5wWOfsAOESoREplZtOYCk1Q\n1Rm1X+GTPjAmeyz9XCCeKr2/L2l+/peQakrj9OCOaJ6v2NOhnRl1EhSYhant0ftW\nYudtZ+D3CaFB7GaKK3CAMyVFO3xPlgj3WEnB+62WGwKBgQDWC6t2wtrhlJygGSNF\n7uAViSXuHVBvZwLgmDmUfKkl7bxmpKRqzAVpQXYeLIsLI7BJMZR+D3FpntfVjvrx\nDPYJfqvd7hctmpxl07OKKeq2DTXrpHSqksvSfSFkmEBzQbUCVm3/ZnCrT+0gTp6w\nJfUOcJNHznVW3Gc9usoznJ397wKBgQDGYDi6i/is8J/pb6WgstQUda9uyx9wdyo1\nQ08HeNTaDSV8Yd3A3s0WsngR5h+WeBqy3H1D45qJD5BNSFLk/CqnBra4op7778jJ\n+G/L7SS635PmXU67bYo2v+uv1UbjAPnlxkUWkRd8053iPxc9pLrSNMjn8VI7cWzZ\n0U6fcXwFEwKBgCRt5AbYbwxJkMamwJwcZcMEjpISJyhurcyv28zr0pYD+ja1+s26\nX4lkfMfx6NBCiLRMXet+kVzajf1o0kjIXe+LwZCJ/yPh1pB2EW6IZ8wIP48VdE27\nojj21wIZ744uNrJpJ1t6gd6GQeNnvhZYv3ZvroFgIBRieqfE7LkQBMu9AoGAe2q/\nwGd2xflKM8wPKmQ3h6cUBwT+QVUSAGMo1sg4/JPzP2gPs3+p7rYH93LJMi70xVRh\n5ovCyATTzRDy6Z1s189YfJRH/wvWSrlyrFeUY2LXvBlO81KaC6fpdNJmsLIZxvdM\nYlbQWwu5DVodFm/W/xJx78N2Wp8djoImvRG4i9sCgYBwQpzhPuI99F/Lsl6DsYAi\n991NuvxNqUaUQJxeHf92yYGWLzYUno+eot9kmJWJ+sp/hdeVtNK0PYGZBRV/VhwO\n7qEP14mnRyRZrEhd9ozjfGw9qljON3FxQ3c217zdPn13G1DnD+qDwqueaddPCxLf\nN0GJL1CLZpqTA2s/Kt9esA==\n-----END PRIVATE KEY-----\n",
+  "client_email": "bot-calendar-sa@cryptic-episode-476814-g2.iam.gserviceaccount.com",
+  "client_id": "116886172490101466184",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/bot-calendar-sa%40cryptic-episode-476814-g2.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
