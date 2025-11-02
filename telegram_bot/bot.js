@@ -34,14 +34,14 @@ setupLogin(bot, supabase);
 
 
 const auth = new google.auth.GoogleAuth({
-  keyFile: "cryptic-episode-476814-g2-88ac169c4d89.json",
-  scopes: ["https://www.googleapis.com/auth/calendar.readonly"],
+  keyFile: "config/zereai-0216377c62bb.json",
+  scopes: ["https://www.googleapis.com/auth/calendar"],
 });
 const calendar = google.calendar({ version: "v3", auth });
 
 async function getUpcomingEvents() {
   const res = await calendar.events.list({
-    calendarId: "primary",
+    calendarId: "lyas200625@gmail.com",
     timeMin: (new Date()).toISOString(),
     maxResults: 10,
     singleEvents: true,
@@ -185,6 +185,10 @@ function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 // ================= Notifiers ==================
 
+// ================= Notifiers ==================
+
+const notifiedEvents = new Set(); // 🧠 Запоминаем уже уведомлённые события
+
 async function notifyUnpaidStudents() {
   const { data: students } = await supabase.from("students")
     .select("name, telegram_id")
@@ -201,22 +205,72 @@ async function notifyCalendarEvents() {
   const events = await getUpcomingEvents();
   if (!events.length) return;
 
+  // Отбираем события, которые начнутся в ближайший час
+  const now = new Date();
+  const hourLater = new Date(now.getTime() + 60 * 60 * 1000);
+
+  const upcomingSoon = events.filter(event => {
+    const start = new Date(event.start?.dateTime || event.start?.date);
+    return start >= now && start <= hourLater;
+  });
+
+  if (!upcomingSoon.length) return;
+
   const { data: students } = await supabase.from("students")
-    .select("telegram_id")
+    .select("id, name, telegram_id")
     .eq("paid", false);
 
-  for (const event of events) {
-    for (const s of students) {
-      await bot.telegram.sendMessage(s.telegram_id, `Событие: ${event.summary}`);
-      await sleep(1500);
+  for (const event of upcomingSoon) {
+    const eventId = event.id; // уникальный ID события Google Calendar
+    if (notifiedEvents.has(eventId)) continue; // 🛑 Уже уведомляли — пропускаем
+
+    // иначе уведомляем и помечаем как отправленное
+    notifiedEvents.add(eventId);
+
+    for (const student of students) {
+      if (!student.telegram_id) continue;
+
+      await bot.telegram.sendMessage(
+        student.telegram_id,
+        `Здравствуйте ${student.name}\n\n` +
+        `Уведомляю вас о том, что в университете METU вам нужно оплатить за семестр.\n\n` +
+        `Просим вас, чтобы удостовериться, что вы прочитали данное сообщение, нажать на кнопку "Прочитал сообщение".\n\n` +
+        `Если вы оплатили за семестр, то нажмите на кнопку "Оплата за учёбу", а далее отправьте PDF.\n\n` +
+        `Если вы оплатили, но всё ещё получаете сообщение — свяжитесь с техподдержкой.`,
+        {
+          reply_markup: {
+            inline_keyboard: [
+              [{ text: "✅ Прочитал сообщение", callback_data: `read_${student.id}` }],
+              [{ text: "💳 Оплата за учёбу", callback_data: `pay_${student.id}` }]
+            ]
+          }
+        }
+      );
+
+      await sleep(2000);
     }
   }
 }
 
+// ⏱ уведомление каждые 2 минуты
+setInterval(notifyCalendarEvents, 2 * 60 * 1000);
+
 schedule.scheduleJob("0 */6 * * *", notifyUnpaidStudents); // каждые 6 часов
-setInterval(notifyCalendarEvents, 90 * 1000); // раз в 90 сек
 
 bot.launch();
+(async () => {
+  try {
+    const events = await getUpcomingEvents();
+    console.log("📅 Ближайшие события:");
+    if (!events.length) console.log("Нет предстоящих событий.");
+    else events.forEach(e =>
+      console.log(`- ${e.summary} (${e.start?.dateTime || e.start?.date})`)
+    );
+  } catch (err) {
+    console.error("❌ Ошибка при получении событий:", err);
+  }
+})();
+
 console.log("✅ Бот запущен");
 
 export { notifyUnpaidStudents };
