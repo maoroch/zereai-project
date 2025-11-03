@@ -191,8 +191,9 @@ const notifiedEvents = new Set(); // 🧠 Запоминаем уже уведо
 
 async function notifyUnpaidStudents() {
   const { data: students } = await supabase.from("students")
-    .select("name, telegram_id")
-    .eq("paid", false);
+  .select("id, name, telegram_id, paid")
+  .eq("paid", false)
+  .not("telegram_id", "is", null); // ⬅️ Только с telegram_id
 
   for (const s of students) {
     if (!s.telegram_id) continue;
@@ -202,60 +203,160 @@ async function notifyUnpaidStudents() {
 }
 
 async function notifyCalendarEvents() {
+  console.log("=== 🔍 ПРОВЕРКА КАЛЕНДАРЯ ===");
+  console.log("🕒 Время:", new Date().toLocaleString("en-US", {timeZone: "Asia/Almaty"}));
+  
   const events = await getUpcomingEvents();
-  if (!events.length) return;
+  console.log("📅 Событий найдено:", events.length);
 
-  // Отбираем события, которые начнутся в ближайший час
   const now = new Date();
-  const hourLater = new Date(now.getTime() + 60 * 60 * 1000);
+  const threeHoursLater = new Date(now.getTime() + 3 * 60 * 60 * 1000);
+
+  // Детальная информация о событии
+  events.forEach(event => {
+    const start = new Date(event.start?.dateTime || event.start?.date);
+    console.log(`📋 "${event.summary}":`);
+    console.log(`   ID: ${event.id}`);
+    console.log(`   Начало: ${start.toLocaleString("en-US", {timeZone: "Asia/Almaty"})}`);
+    console.log(`   Уже уведомляли?: ${notifiedEvents.has(event.id) ? 'ДА ✅' : 'НЕТ ❌'}`);
+  });
 
   const upcomingSoon = events.filter(event => {
     const start = new Date(event.start?.dateTime || event.start?.date);
-    return start >= now && start <= hourLater;
+    const isInRange = start >= now && start <= threeHoursLater;
+    const notNotified = !notifiedEvents.has(event.id);
+    
+    console.log(`🎯 "${event.summary}": диапазон=${isInRange ? 'ДА' : 'НЕТ'}, не уведомляли=${notNotified ? 'ДА' : 'НЕТ'}`);
+    
+    return isInRange && notNotified;
   });
 
-  if (!upcomingSoon.length) return;
+  console.log(`🚀 Новых событий для уведомления: ${upcomingSoon.length}`);
 
-  const { data: students } = await supabase.from("students")
-    .select("id, name, telegram_id")
-    .eq("paid", false);
+  if (!upcomingSoon.length) {
+    console.log("⏭️ Нет новых событий для уведомления\n");
+    return;
+  }
+
+// Проверка студентов
+// Проверка студентов - сразу только с telegram_id и не оплатившие
+const { data: studentsWithTelegram } = await supabase.from("students")
+  .select("id, name, telegram_id, paid")
+  .eq("paid", false)
+  .not("telegram_id", "is", null);
+
+console.log(`📱 Студентов с telegram_id и paid:false: ${studentsWithTelegram?.length || 0}`);
+
+if (!studentsWithTelegram || studentsWithTelegram.length === 0) {
+  console.log("❌ Нет студентов для уведомления\n");
+  return;
+}
+
+// Дополнительная статистика
+const { data: allStudents } = await supabase.from("students")
+  .select("telegram_id, paid");
+  
+const totalStudents = allStudents?.length || 0;
+const studentsWithTelegramTotal = allStudents?.filter(s => s.telegram_id)?.length || 0;
+const paidStudents = allStudents?.filter(s => s.paid)?.length || 0;
+
+console.log(`📊 Статистика базы:`);
+console.log(`   👨‍🎓 Всего студентов: ${totalStudents}`);
+console.log(`   📱 С telegram_id: ${studentsWithTelegramTotal}`);
+console.log(`   💰 Оплативших: ${paidStudents}`);
+console.log(`   ❌ Не оплативших: ${totalStudents - paidStudents}`);
+  studentsWithTelegram.forEach(student => {
+    console.log(`   ✅ ${student.name} (TG: ${student.telegram_id})`);
+  });
 
   for (const event of upcomingSoon) {
-    const eventId = event.id; // уникальный ID события Google Calendar
-    if (notifiedEvents.has(eventId)) continue; // 🛑 Уже уведомляли — пропускаем
+    console.log(`📨 Отправка уведомлений для "${event.summary}"...`);
+    notifiedEvents.add(event.id);
+    console.log(`   ✅ Добавлен в notifiedEvents: ${event.id}`);
 
-    // иначе уведомляем и помечаем как отправленное
-    notifiedEvents.add(eventId);
-
-    for (const student of students) {
-      if (!student.telegram_id) continue;
-
-      await bot.telegram.sendMessage(
-        student.telegram_id,
-        `Здравствуйте ${student.name}\n\n` +
-        `Уведомляю вас о том, что в университете METU вам нужно оплатить за семестр.\n\n` +
-        `Просим вас, чтобы удостовериться, что вы прочитали данное сообщение, нажать на кнопку "Прочитал сообщение".\n\n` +
-        `Если вы оплатили за семестр, то нажмите на кнопку "Оплата за учёбу", а далее отправьте PDF.\n\n` +
-        `Если вы оплатили, но всё ещё получаете сообщение — свяжитесь с техподдержкой.`,
-        {
-          reply_markup: {
-            inline_keyboard: [
-              [{ text: "✅ Прочитал сообщение", callback_data: `read_${student.id}` }],
-              [{ text: "💳 Оплата за учёбу", callback_data: `pay_${student.id}` }]
-            ]
+    for (const student of studentsWithTelegram) {
+      console.log(`   📤 Отправка ${student.name}...`);
+      
+      try {
+        await bot.telegram.sendMessage(
+          student.telegram_id,
+          `Здравствуйте ${student.name}\n\n` +
+          `Уведомляю вас о том, что в университете METU вам нужно оплатить за семестр.\n\n` +
+          `Просим вас, чтобы удостовериться, что вы прочитали данное сообщение, нажать на кнопку "Прочитал сообщение".\n\n` +
+          `Если вы оплатили за семестр, то нажмите на кнопку "Оплата за учёбу", а далее отправьте PDF.\n\n` +
+          `Если вы оплатили, но всё ещё получаете сообщение — свяжитесь с техподдержкой.`,
+          {
+            reply_markup: {
+              inline_keyboard: [
+                [{ text: "✅ Прочитал сообщение", callback_data: `read_${student.id}` }],
+                [{ text: "💳 Оплата за учёбу", callback_data: `pay_${student.id}` }]
+              ]
+            }
           }
-        }
-      );
-
+        );
+        console.log(`      ✅ Успешно отправлено ${student.name}`);
+      } catch (error) {
+        console.log(`      ❌ Ошибка для ${student.name}: ${error.message}`);
+      }
+      
       await sleep(2000);
     }
   }
+  
+  console.log("=== 🔚 КОНЕЦ ОТПРАВКИ ===\n");
 }
-
 // ⏱ уведомление каждые 2 минуты
 setInterval(notifyCalendarEvents, 2 * 60 * 1000);
 
 schedule.scheduleJob("0 */6 * * *", notifyUnpaidStudents); // каждые 6 часов
+
+
+bot.command('send_me', async (ctx) => {
+  console.log("🧪 Команда /send_me вызвана от:", ctx.from.id, ctx.from.first_name);
+  
+  try {
+    await ctx.reply(
+      `🧪 ТЕСТОВОЕ УВЕДОМЛЕНИЕ\n\n` +
+      `Здравствуйте! Это тестовое уведомление.\n\n` +
+      `Ваш Telegram ID: ${ctx.from.id}`,
+      {
+        reply_markup: {
+          inline_keyboard: [
+            [{ text: "✅ Тест кнопка", callback_data: "test" }]
+          ]
+        }
+      }
+    );
+    console.log("✅ Тестовое сообщение отправлено!");
+  } catch (error) {
+    console.log("❌ Ошибка:", error.message);
+  }
+});
+
+bot.command('debug', async (ctx) => {
+  console.log("=== 🐛 DEBUG INFO ===");
+  console.log("User ID:", ctx.from.id);
+  console.log("Username:", ctx.from.username);
+  console.log("First name:", ctx.from.first_name);
+  console.log("Last name:", ctx.from.last_name);
+  
+  // Проверяем есть ли студент с таким telegram_id
+  const { data: student, error } = await supabase.from("students")
+    .select("id, name, telegram_id, paid")
+    .eq("telegram_id", ctx.from.id)
+    .single();
+  
+  console.log("Student in DB:", student);
+  console.log("DB Error:", error);
+  
+  if (student) {
+    ctx.reply(`✅ Вы в базе:\nИмя: ${student.name}\nTG ID: ${student.telegram_id}\nОплата: ${student.paid ? '✅' : '❌'}`);
+  } else {
+    ctx.reply(`❌ Вас нет в базе с TG ID: ${ctx.from.id}`);
+  }
+});
+
+
 
 bot.launch();
 (async () => {

@@ -12,7 +12,7 @@ export function setupLogin(bot, supabase) {
       .single();
 
     if (user) {
-      await ctx.reply(`👋 Привет, ${user.name}! Вы уже авторизованы.`);
+      await ctx.reply(`👋 Привет, ${user.name}! Как ваше настроение? Чем могу сегодня помочь?:)`);
       return;
     }
 
