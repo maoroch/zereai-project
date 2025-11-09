@@ -196,10 +196,16 @@ async function notifyUnpaidStudents() {
   .not("telegram_id", "is", null); // ⬅️ Только с telegram_id
 
   for (const s of students) {
-    if (!s.telegram_id) continue;
-    await bot.telegram.sendMessage(s.telegram_id, `Напоминание: требуется оплата.`);
-    await sleep(2000);
-  }
+  if (!s.telegram_id) continue;
+
+  const message = `Привет, ${s.name}! 👋\n\n` +
+                  `Напоминаем, что за семестр ещё не поступила оплата. ` +
+                  `Пожалуйста, оплатите, когда будет возможность, чтобы всё было в порядке ✅.\n\n` +
+                  `Если уже оплатили, просто нажмите на "Оплата за учёбу" и отправьте в формате PDF реквизит успешного платежа на прошлое уведомлении 😊`;
+
+  await bot.telegram.sendMessage(s.telegram_id, message);
+  await sleep(2000);
+}
 }
 
 async function notifyCalendarEvents() {

@@ -3,8 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Zere AI - Админ панель</title>
+  <title>Zere CRM</title>
   <link rel="stylesheet" href="style/admin.css">
+  <link rel="stylesheet" href="style//wallpaper.css">
 </head>
 <body>
   <!-- ADMIN PANEL -->
@@ -12,13 +13,16 @@
     <aside class="sidebar">
       <div class="sidebar-header">
         <div class="sidebar-logo">⚡</div>
-        <div class="sidebar-title">Zere AI Admin</div>
+        <div class="sidebar-title">Zere CRM</div>
       </div>
       <ul class="nav-menu">
         <li class="nav-item active" data-section="stats">📊 Статистика</li>
         <li class="nav-item" data-section="groups">👥 Группы</li>
         <li class="nav-item" data-section="documentation">📚 Документация</li>
       </ul>
+      <div class="theme-toggle-section">
+        <button class="theme-toggle-btn" id="themeToggleBtn">Светлая тема</button>
+      </div>
       <div class="logout-section">
         <button class="logout-btn" id="logoutBtn">Выйти</button>
       </div>
@@ -390,7 +394,28 @@
           window.location.href = 'login.html';
         }
       });
+
+      // Theme toggle logic
+      const themeToggleBtn = document.getElementById('themeToggleBtn');
+      const body = document.body;
+      const currentTheme = localStorage.getItem('theme') || 'dark';
+      if (currentTheme === 'light') {
+        body.classList.add('light');
+        themeToggleBtn.textContent = 'Тёмная тема';
+      }
+
+      themeToggleBtn.addEventListener('click', function() {
+        body.classList.toggle('light');
+        if (body.classList.contains('light')) {
+          localStorage.setItem('theme', 'light');
+          themeToggleBtn.textContent = 'Тёмная тема';
+        } else {
+          localStorage.setItem('theme', 'dark');
+          themeToggleBtn.textContent = 'Светлая тема';
+        }
+      });
     });
   </script>
+  <script src="script/wallpaper.js"></script>
 </body>
 </html>

@@ -96,8 +96,17 @@ class ExcelModal {
         transition: all 0.2s;
       }
 
+      body.light .excel-section {
+        background: #f0f0f0;
+        border: 1px solid #ddd;
+      }
+
       .excel-section:hover {
         border-color: #3a3a3a;
+      }
+
+      body.light .excel-section:hover {
+        border-color: #ccc;
       }
 
       .excel-section-header {
@@ -132,6 +141,10 @@ class ExcelModal {
         margin: 0;
       }
 
+      body.light .excel-section-title {
+        color: #000;
+      }
+
       .excel-section-desc {
         color: #888;
         font-size: 13px;
@@ -139,10 +152,18 @@ class ExcelModal {
         padding-left: 52px;
       }
 
+      body.light .excel-section-desc {
+        color: #666;
+      }
+
       .excel-divider {
         height: 1px;
         background: #2a2a2a;
         margin: 24px 0;
+      }
+
+      body.light .excel-divider {
+        background: #ddd;
       }
 
       .file-input-wrapper {
@@ -169,6 +190,12 @@ class ExcelModal {
         cursor: pointer;
         transition: all 0.2s;
         font-size: 14px;
+      }
+
+      body.light .file-input-label {
+        background: #f0f0f0;
+        border: 2px dashed #ddd;
+        color: #666;
       }
 
       .file-input-label:hover {
@@ -206,6 +233,7 @@ class ExcelModal {
       }
 
       .excel-result {
+      align-items: center !important;
         margin-top: 24px;
         padding: 16px 20px;
         background: #1a1a1a;
@@ -216,6 +244,11 @@ class ExcelModal {
         gap: 12px;
         min-height: 60px;
         transition: all 0.3s;
+      }
+
+      body.light .excel-result {
+        background: #f0f0f0;
+        border: 1px solid #ddd;
       }
 
       .excel-result-icon {
@@ -232,13 +265,13 @@ class ExcelModal {
         flex: 1;
       }
 
+      body.light .excel-result-text {
+        color: #333;
+      }
+
       .excel-result.error {
         background: rgba(255, 68, 68, 0.1);
         border-color: rgba(255, 68, 68, 0.3);
-      }
-
-      .excel-result.error .excel-result-icon {
-        filter: grayscale(1);
       }
 
       .excel-result.error .excel-result-text {
@@ -455,7 +488,7 @@ class ExcelModal {
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
 
-      this.showResult('✅ Excel файл успешно скачан!', 'success', '✅');
+      this.showResult('Excel файл успешно скачан!', 'success', '✅');
 
       // 🔄 Безопасное обновление после экспорта
       setTimeout(() => {
