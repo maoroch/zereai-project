@@ -1,3 +1,10 @@
+app = "zereai01"
+
 [build]
   builder = "heroku/buildpacks:20"
   build_dir = "back-end"
+
+[env]
+  NODE_ENV = "production"
+
+# Optional: проброс порта, Fly сам ставит PORT
