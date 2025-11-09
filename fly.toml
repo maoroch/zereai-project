@@ -1,0 +1,3 @@
+[build]
+  builder = "heroku/buildpacks:20"
+  build_dir = "back-end"
