@@ -4,7 +4,7 @@
 class ExcelModal {
   constructor() {
     this.modal = null;
-    const BACKEND_URL = '/crmCrud';
+    this.baseURL = '/crmCrud';
     this.init();
   }
 

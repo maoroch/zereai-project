@@ -1,6 +1,9 @@
 import dotenv from "dotenv";
 dotenv.config();
 
+console.log("SUPABASE_ANON_KEY:", process.env.SUPABASE_ANON_KEY);
+
+
 import { Telegraf } from "telegraf";
 import https from "https";
 import fs from "fs";
@@ -14,13 +17,14 @@ import fetch from "node-fetch";
 import { setupLogin } from "./route/auth/login.js";
 
 
+export async function setUpTelegramBot ()  {
 const agent = new https.Agent({ family: 4 });
 
 // БОТ
 const bot = new Telegraf(process.env.BOT_TOKEN, { telegram: { agent } });
 
 // Supabase
-const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
 const publicSupabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
 
 if (!fs.existsSync("uploads")) fs.mkdirSync("uploads");
@@ -364,20 +368,8 @@ bot.command('debug', async (ctx) => {
 
 
 
-bot.launch();
-(async () => {
-  try {
-    const events = await getUpcomingEvents();
-    console.log("📅 Ближайшие события:");
-    if (!events.length) console.log("Нет предстоящих событий.");
-    else events.forEach(e =>
-      console.log(`- ${e.summary} (${e.start?.dateTime || e.start?.date})`)
-    );
-  } catch (err) {
-    console.error("❌ Ошибка при получении событий:", err);
-  }
-})();
+  bot.launch();
+  console.log("✅ Telegram bot запущен");
 
-console.log("✅ Бот запущен");
-
-export { notifyUnpaidStudents };
+  return { bot, supabase }; // если нужно вернуть объект
+}

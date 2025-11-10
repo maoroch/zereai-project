@@ -10,6 +10,13 @@ import authRoute from './CRM/authRoute.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
+// ------------------- ИМПОРТ ТЕЛЕГРАММ БОТА -------------------
+import { setUpTelegramBot } from '../telegram_bot/bot.js';
+
+
+// Инициализация телеграмм бота
+setUpTelegramBot();
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -85,11 +92,11 @@ app.get('/admin', (req, res) =>
   res.sendFile(path.join(__dirname, '../front-end/admin.html'))
 );
 
-app.use('/excelRouter', (req, res, next) => {
+app.use('/crmCrud/excelRouter', (req, res, next) => {
   console.log(`📨 Excel: ${req.method} ${req.path}`);
   next();
 });
-app.use('/excelRouter', excelRouter);
+app.use('/crmCrud/excelRouter', excelRouter);
 
 // ------------------- 404 -------------------
 app.use((req, res) => {

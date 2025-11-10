@@ -4,7 +4,7 @@
 #
 
 app = 'zereai-sparkling-wind-4294'
-primary_region = 'ams'
+primary_region = 'arn'
 
 [http_service]
   internal_port = 8080
