@@ -346,76 +346,98 @@
   <script src="script/admin.js"></script>
   <script src="script/selectorGroup.js"></script>
 
-  <script>
-    // Проверка авторизации при загрузке админ-панели
-    document.addEventListener('DOMContentLoaded', async function() {
-      const SERVER_BASE_URL = 'http://localhost:3000';
+<script>
+  
+  document.addEventListener('DOMContentLoaded', async function() {
+    try {
+      // Используем относительный путь — тот же домен
+      const res = await fetch('/auth/check', {
+        method: 'GET',
+        credentials: 'include'
+      });
 
+      if (!res.ok) {
+        window.location.href = '/login.html';
+        return;
+      }
+
+      const data = await res.json();
+      if (!data.authenticated) {
+        window.location.href = '/login.html';
+        return;
+      }
+
+      // Показываем панель
+      document.getElementById('adminPanel').classList.add('active');
+      
+      // Инициализация админки
+      if (typeof AdminPanel === 'function') {
+        window.adminPanel = new AdminPanel();
+      }
+
+    } catch (error) {
+      console.error('Auth check error:', error);
+      window.location.href = '/login.html';
+    }
+
+    // --- ВЫХОД ---
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
       try {
-        // Проверяем авторизацию через сервер
-        const res = await fetch(`${SERVER_BASE_URL}/auth/check`, {
-          method: 'GET',
+        await fetch('/auth/logout', {
+          method: 'POST',
           credentials: 'include'
         });
-
-        if (!res.ok) {
-          // Если не авторизован, перенаправляем на страницу входа
-          window.location.href = 'login.html';
-          return;
-        }
-
-        const data = await res.json();
-        if (!data.authenticated) {
-          window.location.href = 'login.html';
-          return;
-        }
-
-        // Если авторизован, показываем админ-панель
-        document.getElementById('adminPanel').classList.add('active');
-        
-        // Инициализируем админ-панель
-        adminPanel = new AdminPanel();
-
-      } catch (error) {
-        console.error('Auth check error:', error);
-        window.location.href = 'login.html';
+      } catch (err) {
+        console.error('Logout failed:', err);
+      } finally {
+        window.location.href = '/login.html';
       }
-      
-      // Обработчик кнопки выхода
-      document.getElementById('logoutBtn').addEventListener('click', async function() {
-        try {
-          await fetch(`${SERVER_BASE_URL}/auth/logout`, {
-            method: 'POST',
-            credentials: 'include'
-          });
-          window.location.href = 'login.html';
-        } catch (error) {
-          console.error('Logout error:', error);
-          window.location.href = 'login.html';
-        }
-      });
-
-      // Theme toggle logic
-      const themeToggleBtn = document.getElementById('themeToggleBtn');
-      const body = document.body;
-      const currentTheme = localStorage.getItem('theme') || 'dark';
-      if (currentTheme === 'light') {
-        body.classList.add('light');
-        themeToggleBtn.textContent = 'Тёмная тема';
-      }
-
-      themeToggleBtn.addEventListener('click', function() {
-        body.classList.toggle('light');
-        if (body.classList.contains('light')) {
-          localStorage.setItem('theme', 'light');
-          themeToggleBtn.textContent = 'Тёмная тема';
-        } else {
-          localStorage.setItem('theme', 'dark');
-          themeToggleBtn.textContent = 'Светлая тема';
-        }
-      });
     });
-  </script>
-  <script src="script/wallpaper.js"></script>
+
+    // --- ТЕМА ---
+    const themeToggleBtn = document.getElementById('themeToggleBtn');
+    const body = document.body;
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+
+    if (savedTheme === 'light') {
+      body.classList.add('light');
+      themeToggleBtn.textContent = 'Тёмная тема';
+    }
+
+    themeToggleBtn.addEventListener('click', () => {
+      body.classList.toggle('light');
+      const isLight = body.classList.contains('light');
+      localStorage.setItem('theme', isLight ? 'light' : 'dark');
+      themeToggleBtn.textContent = isLight ? 'Тёмная тема' : 'Светлая тема';
+    });
+  });
+  function toggleGroup(element) {
+  const card = element.closest('.group-card');
+  card.classList.toggle('expanded');
+}
+
+function toggleGroup(element) {
+    const card = element.closest('.group-card');
+    if (card) card.classList.toggle('expanded');
+  }
+
+
+function openEditModal(button) {
+    const groupId = button.dataset.groupId;
+    if (window.adminPanel) {
+      window.adminPanel.openModal(groupId);
+    }
+  }
+
+  function deleteGroup(button) {
+    const groupId = button.dataset.groupId;
+    if (window.adminPanel && confirm('Удалить группу?')) {
+      window.adminPanel.deleteGroup(groupId);
+    }
+  }
+
+</script>
+
+<script src="script/wallpaper.js"></script>
 </body>
 </html>

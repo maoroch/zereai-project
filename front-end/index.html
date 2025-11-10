@@ -1390,7 +1390,6 @@
             this.progressBar = document.getElementById('progressBar');
             this.notification = document.getElementById('notification');
             this.backgroundAnimation = document.getElementById('backgroundAnimation');
-            this.apiBase = 'http://localhost:3000';
             this.currentChatId = this.generateChatId();
             this.isMobile = window.innerWidth < 1024;
             this.init();
@@ -1674,103 +1673,61 @@
             }
         }
 
-        async askQuestion() {
-            const question = this.questionInput.value.trim();
-            if (!question) return;
-            
+async askQuestion() {
+    const question = this.questionInput.value.trim();
+    if (!question) return;
 
-            // Скрываем стартовую картинку при первом сообщении
-            const startScreen = document.getElementById('startScreen');
-            if (startScreen) {
-                startScreen.classList.add('hide');
-                setTimeout(() => {
-                    startScreen.remove();
-                }, 400); // синхронно с анимацией
-            }
+    const startScreen = document.getElementById('startScreen');
+    if (startScreen) {
+        startScreen.classList.add('hide');
+        setTimeout(() => startScreen.remove(), 400);
+    }
 
-            // Добавляем сообщение пользователя
-            this.addMessage(question, 'user');
-            this.saveMessage('user', question);
-            this.questionInput.value = '';
-            this.questionInput.style.height = 'auto';
-            this.askBtn.disabled = true;
+    this.addMessage(question, 'user');
+    this.saveMessage('user', question);
+    this.questionInput.value = '';
+    this.questionInput.style.height = 'auto';
+    this.askBtn.disabled = true;
+    this.showTypingIndicator();
 
-            // Показываем индикатор набора
-            this.showTypingIndicator();
-            
-            if (this.isMobile) {
-                this.showProgress();
-            }
+    if (this.isMobile) this.showProgress();
 
-            const startTime = Date.now();
+    const startTime = Date.now();
+    try {
+        console.log(`Отправка: "${question}"`);
+        const response = await fetch('/ai', {  // ← ИСПРАВЛЕНО
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ question })
+        });
 
-            try {
-                console.log(`📤 Отправка запроса: "${question}"`);
+        const endTime = Date.now();
+        console.log(`Ответ за ${endTime - startTime}ms`);
 
-                const response = await fetch(`${this.apiBase}/ai`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ question })
-                });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
-                const endTime = Date.now();
-                const responseTime = endTime - startTime;
+        const data = await response.json();
+        this.hideTypingIndicator();
+        if (this.isMobile) this.hideProgress();
 
-                console.log(`✅ Ответ получен за ${responseTime}ms`);
-
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                }
-
-                const data = await response.json();
-                
-                console.log('📦 Данные ответа:', data);
-                
-                // Убираем индикатор и добавляем ответ с эффектом печати
-                this.hideTypingIndicator();
-                
-                if (this.isMobile) {
-                    this.hideProgress();
-                }
-                
-                if (data.success) {
-                    await this.typeMessage(data.answer, 'bot');
-                    this.saveMessage('bot', data.answer);
-                    console.log('🧠 Финальный ответ:', data.answer);
-                    
-                    if (this.isMobile) {
-                        this.showNotification('Ответ получен');
-                    }
-                } else {
-                    this.addMessage(`Ошибка: ${data.error}`, 'bot');
-                    this.saveMessage('bot', `Ошибка: ${data.error}`);
-                    
-                    if (this.isMobile) {
-                        this.showNotification('Произошла ошибка', 'error');
-                    }
-                }
-
-            } catch (err) {
-                console.error('❌ Ошибка запроса:', err);
-                this.hideTypingIndicator();
-                
-                if (this.isMobile) {
-                    this.hideProgress();
-                }
-                
-                this.addMessage(`Ошибка подключения: ${err.message}`, 'bot');
-                this.saveMessage('bot', `Ошибка подключения: ${err.message}`);
-                
-                if (this.isMobile) {
-                    this.showNotification('Ошибка подключения', 'error');
-                }
-            } finally {
-                this.askBtn.disabled = false;
-                console.log('--- Запрос завершен ---\n');
-            }
+        if (data.success) {
+            await this.typeMessage(data.answer, 'bot');
+            this.saveMessage('bot', data.answer);
+            if (this.isMobile) this.showNotification('Ответ получен');
+        } else {
+            this.addMessage(`Ошибка: ${data.error}`, 'bot');
+            if (this.isMobile) this.showNotification('Ошибка', 'error');
         }
+    } catch (err) {
+        console.error('Ошибка:', err);
+        this.hideTypingIndicator();
+        if (this.isMobile) this.hideProgress();
+        this.addMessage(`Нет связи с сервером`, 'bot');
+        if (this.isMobile) this.showNotification('Нет связи', 'error');
+    } finally {
+        this.askBtn.disabled = false;
+    }
+}
 
         // Эффект печатания текста
         async typeMessage(text, sender, speed = 20) {

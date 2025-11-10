@@ -4,7 +4,7 @@
 class ExcelModal {
   constructor() {
     this.modal = null;
-    this.baseURL = 'http://localhost:3000';
+    const BACKEND_URL = '/crmCrud';
     this.init();
   }
 
@@ -573,7 +573,7 @@ if (typeof window.loadGroups === 'function') {
 
 async function checkServerConnection() {
   try {
-    const response = await fetch('http://localhost:3000/health');
+    const response = await fetch('/health');
     return response.ok;
   } catch (error) {
     return false;

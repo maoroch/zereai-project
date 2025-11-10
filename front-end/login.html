@@ -21,117 +21,98 @@
     </div>
   </div>
 
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      const loginForm = document.getElementById('loginForm');
-      const passwordInput = document.getElementById('passwordInput');
-      const errorMsg = document.getElementById('errorMsg');
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const loginForm = document.getElementById('loginForm');
+    const passwordInput = document.getElementById('passwordInput');
+    const errorMsg = document.getElementById('errorMsg');
 
-      // ⚠️ ВАЖНО: Используйте полный URL вашего сервера
-      const SERVER_BASE_URL = 'http://localhost:3000';
+    // ------------------- АВТО-ВЫБОР ДОМЕНА -------------------
+    const API_BASE =
+      window.location.hostname.includes('fly.dev')
+        ? 'https://zereai-sparkling-wind-4294.fly.dev'
+        : 'http://localhost:8080'  // локальный сервер
 
-      const login = async (e) => {
-        console.log('=== НАЧАЛО АВТОРИЗАЦИИ ===');
-        e.preventDefault();
+    console.log('API_BASE:', API_BASE);
+
+    const login = async (e) => {
+      console.log('=== НАЧАЛО АВТОРИЗАЦИИ ===');
+      e.preventDefault();
+      
+      const password = passwordInput.value.trim();
+      if (!password) {
+        errorMsg.textContent = 'Введите пароль';
+        errorMsg.classList.add('show');
+        return;
+      }
+
+      try {
+        console.log('Отправка запроса на авторизацию...');
         
-        const password = passwordInput.value.trim();
-        if (!password) {
-          errorMsg.textContent = 'Введите пароль';
-          errorMsg.classList.add('show');
-          return;
-        }
+        const loginRes = await fetch(`${API_BASE}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ password })
+        });
 
-        try {
-          console.log('🔐 Отправка запроса на авторизацию...');
+        console.log('Статус login:', loginRes.status);
+        
+        if (!loginRes.ok) throw new Error(`HTTP ${loginRes.status}`);
+
+        const loginData = await loginRes.json();
+        console.log('Ответ login:', loginData);
+
+        if (loginData.success) {
+          console.log('Авторизация успешна, проверяем сессию...');
           
-          // ⚠️ ИСПОЛЬЗУЙТЕ ПОЛНЫЙ URL!
-          const loginRes = await fetch(`${SERVER_BASE_URL}/auth/login`, {
-            method: 'POST',
-            headers: { 
-              'Content-Type': 'application/json',
-            },
+          const checkRes = await fetch(`${API_BASE}/auth/check`, {
+            method: 'GET',
             credentials: 'include',
-            body: JSON.stringify({ password })
+            headers: { 'Cache-Control': 'no-cache' }
           });
 
-          console.log('📨 Статус ответа login:', loginRes.status);
+          console.log('Статус check:', checkRes.status);
           
-          // Проверяем, что ответ валидный JSON
-          if (!loginRes.ok) {
-            throw new Error(`HTTP error! status: ${loginRes.status}`);
-          }
-          
-          const loginData = await loginRes.json();
-          console.log('Ответ сервера login:', loginData);
+          if (!checkRes.ok) throw new Error(`HTTP ${checkRes.status}`);
 
-          if (loginData.success) {
-            console.log('✅ Авторизация успешна, проверяем сессию...');
-            
-            setTimeout(async () => {
-              console.log('🔍 Отправка запроса на проверку сессии...');
-              
-              // ⚠️ ИСПОЛЬЗУЙТЕ ПОЛНЫЙ URL!
-              const checkRes = await fetch(`${SERVER_BASE_URL}/auth/check`, {
-                method: 'GET',
-                credentials: 'include',
-                headers: {
-                  'Cache-Control': 'no-cache'
-                }
-              });
-              
-              console.log('📨 Статус ответа check:', checkRes.status);
-              
-              if (!checkRes.ok) {
-                throw new Error(`HTTP error! status: ${checkRes.status}`);
-              }
-              
-              const checkData = await checkRes.json();
-              console.log('🔍 Результат проверки сессии:', checkData);
-              
-              if (checkData.authenticated) {
-                console.log('🎉 УСПЕХ! Сессия работает. Перенаправляем на admin.html');
-                window.location.href = 'admin.html';
-              } else {
-                console.log('❌ Сессия не работает после логина');
-                errorMsg.textContent = 'Проблема с сессией. Попробуйте снова.';
-                errorMsg.classList.add('show');
-              }
-            }, 500);
+          const checkData = await checkRes.json();
+          console.log('Результат check:', checkData);
+          
+          if (checkData.authenticated) {
+            console.log('УСПЕХ! Перенаправляем на admin.html');
+            window.location.href = 'admin.html';
           } else {
-            console.log('❌ Ошибка авторизации');
-            errorMsg.textContent = loginData.error || 'Неверный пароль';
+            errorMsg.textContent = 'Сессия не активна';
             errorMsg.classList.add('show');
-            passwordInput.value = '';
-            passwordInput.focus();
           }
-        } catch (err) {
-          console.error('💥 Ошибка:', err);
-          if (err.message.includes('Failed to fetch')) {
-            errorMsg.textContent = 'Не удалось подключиться к серверу. Убедитесь, что сервер запущен на localhost:3000';
-          } else {
-            errorMsg.textContent = `Ошибка: ${err.message}`;
-          }
+        } else {
+          errorMsg.textContent = loginData.error || 'Неверный пароль';
           errorMsg.classList.add('show');
+          passwordInput.value = '';
+          passwordInput.focus();
         }
-      };
+      } catch (err) {
+        console.error('Ошибка:', err);
+        if (err.message.includes('Failed to fetch')) {
+          errorMsg.textContent = 'Нет связи с сервером';
+        } else {
+          errorMsg.textContent = `Ошибка: ${err.message}`;
+        }
+        errorMsg.classList.add('show');
+      }
+    };
 
-      loginForm.addEventListener('submit', login);
-      passwordInput.focus();
-      
-      // Проверяем доступность сервера при загрузке
-      console.log('🔍 Проверка доступности сервера...');
-      fetch(`${SERVER_BASE_URL}/health`)
-        .then(res => {
-          if (res.ok) {
-            console.log('✅ Сервер доступен');
-          } else {
-            console.log('❌ Сервер недоступен');
-          }
-        })
-        .catch(err => {
-          console.error('❌ Сервер не отвечает:', err);
-        });
-    });
-  </script>
+    loginForm.addEventListener('submit', login);
+    passwordInput.focus();
+
+    // Проверка здоровья сервера
+    fetch(`${API_BASE}/health`)
+      .then(res => console.log('Сервер:', res.ok ? 'онлайн' : 'оффлайн'))
+      .catch(() => console.log('Сервер недоступен'));
+  });
+</script>
+
+
 </body>
 </html>

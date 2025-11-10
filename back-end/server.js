@@ -1,13 +1,12 @@
 import express from 'express';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 import { askZere } from './ai/app.js';
 import dotenv from "dotenv";
-import session from "express-session";
 import crmCrud from "./CRM/crud.js";
 import excelRouter from './CRM/excel.js';
 import gradient from 'gradient-string';
-import authRoute from './CRM/authRoute.js'
-import { requireAuth } from "./CRM/auth/requireAuth.js";
+import authRoute from './CRM/authRoute.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -16,15 +15,20 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
-// --- Парсинг JSON ---
+// ------------------- Парсинг -------------------
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
+app.use(cookieParser()); // ← ДОБАВЛЕНО для работы с cookies
 dotenv.config();
 
-// --- Настройка CORS ---
+// ------------------- CORS -------------------
+const isProd = process.env.NODE_ENV === 'production';
+const corsOrigins = isProd 
+  ? ['https://zereai-sparkling-wind-4294.fly.dev']
+  : ['http://localhost:3000', 'http://127.0.0.1:5500'];
+
 app.use(cors({
-  origin: ['http://localhost:3000', 'http://127.0.0.1:5500'],
+  origin: corsOrigins,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: [
@@ -32,136 +36,82 @@ app.use(cors({
     'Authorization',
     'Cache-Control',
     'X-Requested-With',
-    'Accept'
-  ]
+    'Accept',
+  ],
 }));
 
-// --- Сессии ---
-app.use(
-  session({
-    name: 'zere.sid',
-    secret: "curator-secret",
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      secure: false,
-      httpOnly: true,
-      maxAge: 24 * 60 * 60 * 1000,
-      sameSite: 'lax'
-    }
-  })
-);
-
-// --- Статическая раздача файлов ---
-// Предполагая, что ваши HTML файлы находятся в папке на одном уровне с back-end
+// ------------------- Статические файлы -------------------
 app.use(express.static(path.join(__dirname, '../front-end')));
 
-// Middleware для отладки сессий
+// ------------------- Debug -------------------
 app.use((req, res, next) => {
-  console.log('=== SESSION DEBUG ===');
-  console.log('Time:', new Date().toISOString());
-  console.log('Method:', req.method);
-  console.log('URL:', req.url);
-  console.log('Session ID:', req.sessionID);
-  console.log('Session data:', req.session);
-  console.log('Headers.cookie:', req.headers.cookie);
-  console.log('=====================');
+  console.log(`\n[${new Date().toISOString()}] ${req.method} ${req.url}`);
+  console.log('Cookies:', req.cookies?.auth_token ? '✅ auth_token' : '❌ нет');
   next();
 });
 
-// --- Health check endpoint ---
+// ------------------- Health -------------------
 app.get('/health', (req, res) => {
-    res.json({ 
-        status: 'ok', 
-        message: 'Zere AI Server is running',
-        availableModels: ['deepseek-r1:8b'] 
-    });
-});
-
-// --- AI endpoint ---
-app.post('/ai', async (req, res) => {
-    const { question } = req.body;
-    
-    if (!question) {
-        return res.status(400).json({ 
-            success: false, 
-            error: 'Question is required' 
-        });
-    }
-
-    try {
-        console.log(`📥 Received question: ${question}`);
-        const answer = await askZere(question);
-        
-        res.json({ 
-            success: true, 
-            answer: answer,
-            question: question,
-            timestamp: new Date().toISOString()
-        });
-        
-    } catch (err) {
-        console.error('❌ Error in /ai:', err);
-        res.status(500).json({ 
-            success: false, 
-            error: err.message 
-        });
-    }
-});
-
-// --- Маршруты ---
-app.use("/crmCrud", crmCrud);
-app.use("/auth", authRoute);
-
-// --- Роуты для HTML страниц ---
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, '../front-end/login.html'));
-});
-
-app.get('/admin', (req, res) => {
-  res.sendFile(path.join(__dirname, '../front-end/admin.html'));
-});
-
-// Debug middleware для excelRouter
-app.use('/excelRouter', (req, res, next) => {
-  console.log(`📨 Excel Router: ${req.method} ${req.path}`);
-  next();
-});
-
-app.use('/excelRouter', excelRouter);
-
-// --- 404 Handler ---
-app.use((req, res) => {
-  console.log(`❌ 404: ${req.method} ${req.originalUrl}`);
-  res.status(404).json({ 
-    success: false, 
-    error: `Route ${req.method} ${req.originalUrl} not found` 
+  res.json({
+    status: 'ok',
+    message: 'Zere AI Server is running',
   });
 });
 
-// --- Баннер ---
+// ------------------- AI endpoint -------------------
+app.post('/ai', async (req, res) => {
+  const { question } = req.body;
+  if (!question) {
+    return res.status(400).json({ success: false, error: 'Question is required' });
+  }
+  try {
+    console.log(`📥 Question: ${question}`);
+    const answer = await askZere(question);
+    res.json({ success: true, answer, question, timestamp: new Date().toISOString() });
+  } catch (err) {
+    console.error('❌ AI Error:', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// ------------------- Маршруты -------------------
+app.use('/crmCrud', crmCrud);
+app.use('/auth', authRoute);
+
+app.get('/', (req, res) =>
+  res.sendFile(path.join(__dirname, '../front-end/login.html'))
+);
+app.get('/admin', (req, res) =>
+  res.sendFile(path.join(__dirname, '../front-end/admin.html'))
+);
+
+app.use('/excelRouter', (req, res, next) => {
+  console.log(`📨 Excel: ${req.method} ${req.path}`);
+  next();
+});
+app.use('/excelRouter', excelRouter);
+
+// ------------------- 404 -------------------
+app.use((req, res) => {
+  res.status(404).json({ success: false, error: 'Not found' });
+});
+
+// ------------------- Баннер -------------------
 const banner = `
 ===============================
        Zere AI — © 2025 Ilyas Salimov
-       All rights reserved.
        Telegram: @Ilyas_ones
-
-Team:
-  🚀 CEO, CTO                     — Ilyas Salimov
-  🤖 Back-end, Telegram Developer — Borodin Alexander, Ali Duisen
-
-       ✨ Crafted with passion ✨
+       Crafted with passion ✨
 ===============================
 `;
-
 console.log(gradient.morning(banner));
 
-app.listen(3000, () => {
-    console.log('🚀 Server running on http://localhost:3000');
-    console.log('📋 Available endpoints:');
-    console.log('   GET  http://localhost:3000/health');
-    console.log('   POST http://localhost:3000/ai');
-    console.log('   POST http://localhost:3000/excelRouter/upload-groups');
-    console.log('   GET  http://localhost:3000/ - Login page');
-    console.log('   GET  http://localhost:3000/admin - Admin panel');
+// ------------------- ЗАПУСК -------------------
+const PORT = process.env.PORT || 8080;
+
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 Server running on http://0.0.0.0:${PORT}`);
+  console.log(`📍 Environment: ${isProd ? 'PRODUCTION' : 'DEVELOPMENT'}`);
+  console.log(`🔐 CORS: ${corsOrigins.join(', ')}`);
+  console.log(`🎟️  Auth method: JWT (stateless)`);
 });

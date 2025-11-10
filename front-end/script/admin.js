@@ -1,4 +1,4 @@
-const BACKEND_URL = 'http://localhost:3000/crmCrud';
+const BACKEND_URL = '/crmCrud';
 
 class AdminPanel {
     constructor() {
@@ -98,27 +98,32 @@ class AdminPanel {
         addStudentBtn.addEventListener('click', () => this.addStudentRow());
     }
 
-    openModal(groupId = null) {
-        const modal = document.getElementById('groupModal');
-        const modalTitle = document.getElementById('modalTitle');
-        const studentsList = document.getElementById('studentsList');
-        
-        this.currentEditingId = groupId;
-        studentsList.innerHTML = '';
+openModal(groupId = null) {
+    const modal = document.getElementById('groupModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const studentsList = document.getElementById('studentsList');
+    
+    this.currentEditingId = groupId ? Number(groupId) : null; // ← ПРИВЕДЕНИЕ К ЧИСЛУ
+    studentsList.innerHTML = '';
 
-        if (groupId) {
-            const group = this.groups.find(g => g.id === groupId);
-            modalTitle.textContent = 'Редактировать группу';
-            document.getElementById('groupName').value = group.name;
-            group.students.forEach(student => this.addStudentRow(student));
-        } else {
-            modalTitle.textContent = 'Добавить группу';
-            document.getElementById('groupName').value = '';
-            this.addStudentRow();
+    if (this.currentEditingId) {
+        const group = this.groups.find(g => g.id === this.currentEditingId);
+        if (!group) {
+            alert('Группа не найдена');
+            this.closeModal();
+            return;
         }
-
-        modal.classList.add('show');
+        modalTitle.textContent = 'Редактировать группу';
+        document.getElementById('groupName').value = group.name;
+        group.students.forEach(student => this.addStudentRow(student));
+    } else {
+        modalTitle.textContent = 'Добавить группу';
+        document.getElementById('groupName').value = '';
+        this.addStudentRow();
     }
+
+    modal.classList.add('show');
+}
 
     closeModal() {
         document.getElementById('groupModal').classList.remove('show');
@@ -308,7 +313,7 @@ class AdminPanel {
             
             return `
                 <div class="group-card" data-group-id="${group.id}">
-                    <div class="group-header" onclick="adminPanel.toggleGroup(${group.id})">
+                    <div class="group-header" onclick="toggleGroup(this)">
                         <div class="group-header-left">
                             <div class="group-name">${group.name}</div>
                         </div>
@@ -335,10 +340,15 @@ class AdminPanel {
                         <div class="group-body">
                             <div class="students-header">
                                 <div class="students-title">Список студентов (${totalCount})</div>
-                                <div class="group-actions">
-                                    <button class="icon-btn" onclick="event.stopPropagation(); adminPanel.openModal(${group.id})">✏️ Редактировать</button>
-                                    <button class="icon-btn" onclick="event.stopPropagation(); adminPanel.deleteGroup(${group.id})" style="color: #ff4444;">🗑️ Удалить</button>
-                                </div>
+                                                    <div class="group-actions">
+                                                    <button class="icon-btn" 
+                                                            onclick="event.stopPropagation(); openEditModal(this)" 
+                                                            data-group-id="${group.id}">Редактировать</button>
+                                                    <button class="icon-btn" 
+                                                            onclick="event.stopPropagation(); deleteGroup(this)" 
+                                                            data-group-id="${group.id}" 
+                                                            style="color: #ff4444;">Удалить</button>
+                                                    </div>
                             </div>
 
                             <div class="students-list">
@@ -361,10 +371,7 @@ class AdminPanel {
         }).join('');
     }
 
-    toggleGroup(groupId) {
-        const card = document.querySelector(`[data-group-id="${groupId}"]`);
-        card.classList.toggle('expanded');
-    }
+    
 
     updateStats() {
         const totalGroups = this.groups.length;
