@@ -10,12 +10,7 @@ import authRoute from './CRM/authRoute.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-// ------------------- ИМПОРТ ТЕЛЕГРАММ БОТА -------------------
-import { setUpTelegramBot } from '../telegram_bot/bot.js';
 
-
-// Инициализация телеграмм бота
-setUpTelegramBot();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
