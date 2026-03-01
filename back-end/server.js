@@ -26,8 +26,8 @@ dotenv.config();
 // ------------------- CORS -------------------
 const isProd = process.env.NODE_ENV === 'production';
 const corsOrigins = isProd 
-  ? ['https://zereai-sparkling-wind-4294.fly.dev']
-  : ['http://localhost:3000', 'http://127.0.0.1:5500'];
+  ? ['https://zereai-sparkling-wind-4294.fly.dev', 'https://zere-six.vercel.app']
+  : ['http://localhost:3000', 'http://127.0.0.1:5500', 'http://localhost:3001'];
 
 app.use(cors({
   origin: corsOrigins,
