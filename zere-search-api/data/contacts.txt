@@ -1,0 +1,4 @@
+Контакты:
+- Учебный отдел: study@university.edu
+- Бухгалтерия: finance@university.edu
+- Техническая поддержка LMS: support@university.edu
