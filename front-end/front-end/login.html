@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zere AI - Авторизация</title>
+  <link rel="stylesheet" href="style/admin.css">
+</head>
+<body>
+  <!-- LOGIN SCREEN -->
+  <div class="login-container" id="loginScreen">
+    <div class="login-box">
+      <div class="login-logo">🔐</div>
+      <h1 class="login-title">Админ панель</h1>
+      <p class="login-subtitle">Введите пароль для доступа</p>
+      <form id="loginForm">
+        <input type="password" id="passwordInput" class="input-field" placeholder="Пароль" required>
+        <button type="submit" class="login-btn" id="loginBtn">Войти</button>
+      </form>
+      <div class="error-message" id="errorMsg">Неверный пароль</div>
+    </div>
+  </div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const loginForm = document.getElementById('loginForm');
+    const passwordInput = document.getElementById('passwordInput');
+    const errorMsg = document.getElementById('errorMsg');
+
+    // ------------------- АВТО-ВЫБОР ДОМЕНА -------------------
+    const API_BASE =
+      window.location.hostname.includes('fly.dev')
+        ? 'https://zereai-sparkling-wind-4294.fly.dev'
+        : 'http://localhost:8080'  // локальный сервер
+
+    console.log('API_BASE:', API_BASE);
+
+    const login = async (e) => {
+      console.log('=== НАЧАЛО АВТОРИЗАЦИИ ===');
+      e.preventDefault();
+      
+      const password = passwordInput.value.trim();
+      if (!password) {
+        errorMsg.textContent = 'Введите пароль';
+        errorMsg.classList.add('show');
+        return;
+      }
+
+      try {
+        console.log('Отправка запроса на авторизацию...');
+        
+        const loginRes = await fetch(`${API_BASE}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ password })
+        });
+
+        console.log('Статус login:', loginRes.status);
+        
+        if (!loginRes.ok) throw new Error(`HTTP ${loginRes.status}`);
+
+        const loginData = await loginRes.json();
+        console.log('Ответ login:', loginData);
+
+        if (loginData.success) {
+          console.log('Авторизация успешна, проверяем сессию...');
+          
+          const checkRes = await fetch(`${API_BASE}/auth/check`, {
+            method: 'GET',
+            credentials: 'include',
+            headers: { 'Cache-Control': 'no-cache' }
+          });
+
+          console.log('Статус check:', checkRes.status);
+          
+          if (!checkRes.ok) throw new Error(`HTTP ${checkRes.status}`);
+
+          const checkData = await checkRes.json();
+          console.log('Результат check:', checkData);
+          
+          if (checkData.authenticated) {
+            console.log('УСПЕХ! Перенаправляем на admin.html');
+            window.location.href = 'admin.html';
+          } else {
+            errorMsg.textContent = 'Сессия не активна';
+            errorMsg.classList.add('show');
+          }
+        } else {
+          errorMsg.textContent = loginData.error || 'Неверный пароль';
+          errorMsg.classList.add('show');
+          passwordInput.value = '';
+          passwordInput.focus();
+        }
+      } catch (err) {
+        console.error('Ошибка:', err);
+        if (err.message.includes('Failed to fetch')) {
+          errorMsg.textContent = 'Нет связи с сервером';
+        } else {
+          errorMsg.textContent = `Ошибка: ${err.message}`;
+        }
+        errorMsg.classList.add('show');
+      }
+    };
+
+    loginForm.addEventListener('submit', login);
+    passwordInput.focus();
+
+    // Проверка здоровья сервера
+    fetch(`${API_BASE}/health`)
+      .then(res => console.log('Сервер:', res.ok ? 'онлайн' : 'оффлайн'))
+      .catch(() => console.log('Сервер недоступен'));
+  });
+</script>
+
+
+</body>
+</html>

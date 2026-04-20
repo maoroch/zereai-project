@@ -16,18 +16,31 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
-  fastapi:                       # ← должно быть на том же уровне, что и express, с отступом 2 пробела
+  nextjs:
+    build:
+      context: ./front-end           # ← изменили с client-side на front-end
+      dockerfile: Dockerfile         # должен быть в папке front-end
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=http://express:8080
+    depends_on:
+      - express
+    restart: unless-stopped
+
+  fastapi:
     build:
       context: ./zere-search-api
       dockerfile: Dockerfile
     ports:
       - "7860:7860"
     volumes:
-      - ./zere-search-api/data:/app/data:ro   # ← относительный путь
+      - ./zere-search-api/data:/app/data:ro
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:7860/health')"]
       interval: 10s
       timeout: 5s
-      retries: 5
-      start_period: 30s
+      retries: 3
+      start_period: 90s
     restart: unless-stopped
