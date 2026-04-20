@@ -1,5 +1,5 @@
 # Zere AI
-
+> Zere AI provides semantic search + AI-assisted answers across internal documents using vector search and LLM reasoning.
 > AI-powered search and advisory platform built on Express.js + FastAPI
 
 ---
