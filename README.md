@@ -38,6 +38,10 @@ zereAI/
 
 ### Структура Express backend
 
+
+<img src="documentation/architecture/zere_ai_chatbot_architecture.svg">
+
+
 ```
 zere-express/
 ├── server.js               Точка входа — HTTP + WebSocket на одном порту
