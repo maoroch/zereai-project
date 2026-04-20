@@ -24,7 +24,7 @@ export default function ChatPage() {
     newChat,
     clearAll,
   } = useChatHistory();
-
+  
   const [messages, setMessages] = useState<Message[]>([]);
   const [botStatus, setBotStatus] = useState<BotStatus>("idle");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);

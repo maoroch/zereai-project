@@ -1,18 +1,11 @@
-FROM node:20-alpine AS deps
-WORKDIR /app
-COPY package.json package-lock.json* ./
-RUN npm ci --only=production
-
 FROM node:20-alpine AS builder
 WORKDIR /app
-# Копируем production-зависимости
-COPY --from=deps /app/node_modules ./node_modules
-# Копируем всё, включая dev-зависимости
+COPY package.json package-lock.json* ./
+RUN npm ci
 COPY . .
-# Устанавливаем dev-зависимости (TypeScript, etc.)
-RUN npm install --only=dev
-# Собираем Next.js
 RUN npm run build
+# Удаляем dev-зависимости, оставляя только production
+RUN npm prune --production
 
 FROM node:20-alpine AS runner
 WORKDIR /app
