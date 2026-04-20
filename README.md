@@ -217,18 +217,6 @@ docker exec zereai-express-1 wget -qO- http://fastapi:7860/health
 
 ---
 
-## 🛑 Устранение неполадок
-
-| Проблема | Решение |
-|---|---|
-| `documents: 0` в health FastAPI | Убедитесь, что в `./zere-search-api/data` есть `.txt` файлы, и том смонтирован корректно (`docker compose config`). |
-| Express не подключается к FastAPI | Проверьте переменную `SEARCH_API_URL=http://fastapi:7860`. Пропингуйте: `docker exec zereai-express-1 ping fastapi`. |
-| Ошибка 503 в логах Express | FastAPI не отвечает. Проверьте его логи. Возможно, не хватает памяти для загрузки модели (требуется ~2 GB RAM). |
-| `JWT_SECRET not set` | Создайте `.env` с этой переменной. |
-| Медленный первый запуск | FastAPI скачивает модель ~500 MB. Это разовая операция; при следующих запусках модель берётся из кэша. |
-
----
-
 ## 📦 Зависимости
 
 **Backend (Node.js)**
