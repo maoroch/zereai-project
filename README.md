@@ -6,50 +6,12 @@
 
 ## Содержание
 
-- [Быстрый старт (без Docker)](#-быстрый-старт-без-docker)
 - [Запуск через Docker Compose](#-запуск-через-docker-compose)
 - [Архитектура](#-архитектура)
 - [API](#-api)
 - [Переменные окружения](#-переменные-окружения)
 - [Разработка и отладка](#-разработка-и-отладка)
 - [Устранение неполадок](#-устранение-неполадок)
-
----
-
-## 🚀 Быстрый старт (без Docker)
-
-### Требования
-
-- Node.js v18+
-- NPM v9+
-
-### Установка
-
-```bash
-git clone https://github.com/maoroch/smartAdvisor.git
-cd smartAdvisor
-npm install
-```
-
-### Настройка окружения
-
-Создайте файл `.env` в корне проекта:
-
-```env
-SUPABASE_URL=your_supabase_url
-SUPABASE_KEY=your_supabase_key
-SESSION_SECRET=your_secret_key
-GROQ_API_KEY=your_groq_api_key
-JWT_SECRET=your_jwt_secret
-```
-
-### Запуск
-
-```bash
-node server.js
-```
-
-Сервер запустится на `http://localhost:3000`. При старте отобразится баннер с информацией о доступных эндпоинтах.
 
 ---
 
