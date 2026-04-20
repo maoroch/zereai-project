@@ -13,6 +13,7 @@ RUN npm install
 # Копируем весь код back-end
 COPY back-end/. .
 
+
 # Копируем фронтенд в ../front-end, чтобы path в Express совпадал
 COPY front-end ../front-end
 

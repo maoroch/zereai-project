@@ -31,7 +31,7 @@ class AnnouncementModal {
                     </button>
                     
                     <div class="announcement-banner">
-                        <img src="assets/announcement-banner.png" 
+                        <img src="assets/banner.webp" 
                              alt="Zere AI Banner" 
                              class="announcement-banner-img">
                     </div>

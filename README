@@ -97,3 +97,117 @@ node-fetch — HTTP-запросы
 
 См. [LICENSE](./LICENSE) для деталей.  
 Все права защищены © 2025 Ilyas Salimov.
+
+
+
+# 🐳 Запуск Zere AI через Docker Compose
+
+## 📁 Структура проекта
+
+```
+.
+├── docker-compose.yml
+├── zere-search-api
+│   ├── Dockerfile
+│   ├── data
+│   ├── search_api.py
+│   └── requirements.txt
+└── zere-express
+    ├── Dockerfile
+    ├── server.js
+    └── package.json
+
+
+## ⚙️ Требования
+
+- Docker (версия 20.10+)
+- Docker Compose (V2)
+- Git (опционально)
+
+## 🔧 Подготовка
+
+### 1. Клонировать репозиторий (если ещё нет)
+```bash
+git clone <your-repo-url>
+cd zereAI
+
+GROQ_API_KEY=ваш_ключ_groq
+JWT_SECRET=любая_длинная_секретная_строка
+
+Примечание: GROQ_API_KEY нужен для работы LLM-функций. JWT_SECRET – для аутентификации.
+
+3. Убедиться, что в папке zere-search-api/data есть .txt файлы
+Если нет – добавьте туда любые текстовые документы. Они будут автоматически разбиты на чанки и проиндексированы.
+
+🚀 Запуск
+Из корня zereAI выполните:
+
+bash
+docker compose up -d
+Параметры:
+
+-d – запуск в фоновом режиме
+
+--build – пересобрать образы перед запуском (если вносили изменения)
+
+После запуска будут доступны:
+
+Frontend + Express API → http://localhost:8080
+
+Search API (FastAPI) → http://localhost:7860 (healthcheck: /health)
+
+🧪 Проверка работы
+1. Проверить состояние контейнеров
+bash
+docker compose ps
+Оба контейнера (zereai-express-1, zereai-fastapi-1) должны быть в статусе Up и healthy.
+
+2. Проверить FastAPI
+bash
+curl http://localhost:7860/health
+Ожидаемый ответ:
+
+json
+{"status":"ok","documents":<количество_чанков>,"redis":false}
+3. Проверить связь между сервисами (из контейнера Express)
+bash
+docker exec zereai-express-1 wget -qO- http://fastapi:7860/health
+4. Открыть веб-интерфейс
+Перейдите в браузере на http://localhost:8080. Введите поисковый запрос (например, "качество образования") и нажмите «Поиск». Должны появиться результаты из загруженных документов.
+
+🛑 Остановка
+bash
+docker compose down
+Чтобы удалить также тома с данными (если нужно полностью очистить):
+
+bash
+docker compose down -v
+🔄 Пересборка после изменений
+Если вы меняли код (Express, FastAPI) или добавляли новые документы:
+
+bash
+docker compose up --build -d
+📊 Логи
+Логи Express: docker logs zereai-express-1 -f
+
+Логи FastAPI: docker logs zereai-fastapi-1 -f
+
+⚠️ Возможные проблемы и решения
+Проблема	Решение
+documents: 0 в health FastAPI	Проверьте, что папка ./zere-search-api/data содержит .txt файлы, и что том смонтирован правильно (см. docker compose config).
+Express не может подключиться к FastAPI	Убедитесь, что переменная окружения SEARCH_API_URL=http://fastapi:7860 передаётся в контейнер express. Проверьте сеть: docker exec zereai-express-1 ping fastapi.
+Ошибка 503 в логах Express	FastAPI не отвечает. Проверьте его логи и health. Если FastAPI падает, возможно, не хватает памяти для загрузки модели (требуется ~2GB).
+JWT_SECRET not set	Создайте .env файл с этой переменной. Можно использовать любое случайное значение, например openssl rand -base64 32.
+📝 Примечания
+По умолчанию FastAPI использует модель paraphrase-multilingual-MiniLM-L12-v2. При первом запуске она скачается (около 500 MB), что займёт некоторое время.
+
+Поиск работает без Redis (кэш отключён). Для включения кэша запустите Redis-контейнер и укажите его в docker-compose.yml.
+
+Если вы меняете порты в docker-compose.yml, не забудьте обновить SEARCH_API_URL в сервисе express.
+
+🧑‍💻 Автор
+Ilyas Salimov
+Telegram: @Ilyas_ones
+Проект Zere AI, 2025–2026
+
+text

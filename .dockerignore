@@ -10,11 +10,19 @@ back-end/**/.env
 back-end/**/.ENV
 
 # flyctl launch added from telegram_bot/.gitignore
-telegram_bot/**/.DS_Store
-telegram_bot/**/.ENV
-telegram_bot/**/.env
-telegram_bot/**/node_modules
-telegram_bot/**/uploads
-telegram_bot/**/cryptic-episode-476814-g2-88ac169c4d89.json
-telegram_bot/**/config
 fly.toml
+telegram_bot/
+fastapi-search/
+# new client-side
+client-side/
+
+# client-side/**/node_modules
+# client-side/**/.env
+# client-side/**/.ENV
+# client-side/**/uploads
+# telegram_bot/**/.DS_Store
+# telegram_bot/**/.ENV
+# telegram_bot/**/.env
+# telegram_bot/**/node_modules
+# telegram_bot/**/uploads
+# telegram_bot/**/cryptic-episode-476814-g2-88ac169c4d89.json

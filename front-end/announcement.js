@@ -1,4 +1,4 @@
-// Popup Announcement для Zere AI
+// Popup announcement для Zere AI
 (function() {
     'use strict';
     

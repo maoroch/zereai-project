@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0a0a0a">
+
   <title>Zere AI</title>
   <style>
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap');
@@ -1282,7 +1284,7 @@
 <div class="messages" id="messages">
   <!-- Стартовая картинка — показывается только при пустом чате -->
   <div class="start-screen" id="startScreen">
-    <img src="assets/start-intro2.gif" alt="Zere AI" class="start-image">
+    <img src="assets/start-intro2.webp" loading="lazy" alt="Zere AI" class="start-image">
     <h1 class="start-text">Привет! Я, <span class="title-intro">Zere AI</span></h1>
     <p class="start-text-sub">Ваш университетский ассистент. <br>Задайте мне вопрос, и я помогу вам! </p>
   </div>
@@ -1950,7 +1952,7 @@ newChat() {
                         </button>
                         
                         <div class="announcement-banner">
-                            <img src="assets/announcement-banner.png" 
+                            <img src="assets/banner.webp" 
                                  alt="Zere AI Banner" 
                                  class="announcement-banner-img">
                         </div>
@@ -2338,7 +2340,7 @@ newChat() {
         window.announcementModal = new AnnouncementModal();
     });
   </script>
-
+<!--
   <script>
     // Popup announcement для Zere AI
     (function() {
@@ -2390,7 +2392,7 @@ newChat() {
                             <div class="zere-popup-features">
                                 <div class="zere-feature">
                                     <span class="zere-feature-icon">💡</span>
-                                    <span>Мгновенные ответы на академические вопросы</span>
+                                    <span> ответы на академические вопросы</span>
                                 </div>
                                 <div class="zere-feature">
                                     <span class="zere-feature-icon">📚</span>
@@ -2760,6 +2762,8 @@ newChat() {
         console.log('✅ Zere AI Popup загружен');
     })();
   </script>
+-->
+
 </body>
 </html>
 
@@ -2797,3 +2801,34 @@ document.addEventListener('copy', function(e) {
     }
 });
 </script>
+
+<style>
+  @media screen and (max-width: 768px) {
+    .messages {
+      padding-top: 90px !important;
+      padding-bottom: 120px !important;
+    }
+
+    .input-container {
+      padding-bottom: 20px !important;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding-bottom: calc(10px + env(safe-area-inset-bottom)); /* вот магия */
+    }
+    .start-screen {
+      padding-bottom: 75px;
+    }
+  .header {
+    z-index: 1000;
+      position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  padding-bottom: calc(10px + env(safe-area-inset-top)); /* вот магия */
+
+  }
+  }
+
+</style>

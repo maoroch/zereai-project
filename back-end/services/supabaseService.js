@@ -8,11 +8,12 @@ console.log('🔧 Checking environment variables...');
 console.log('SUPABASE_URL:', process.env.SUPABASE_URL ? '✅ Set' : '❌ Missing');
 console.log('SUPABASE_KEY:', process.env.SUPABASE_KEY ? '✅ Set' : '❌ Missing');
 
+// Игнорируем отсутствие Supabase ключей для локальной разработки
 if (!process.env.SUPABASE_URL || !process.env.SUPABASE_KEY) {
-  throw new Error('Missing Supabase environment variables. Please check your .env file');
+  console.warn('⚠️ Missing Supabase environment variables. Supabase features will be disabled.');
 }
 
-export const supabase = createClient(
+export const supabase = (process.env.SUPABASE_URL && process.env.SUPABASE_KEY) ? createClient(
   process.env.SUPABASE_URL, 
   process.env.SUPABASE_KEY, // Используем SERVICE_KEY вместо KEY
   {
@@ -21,7 +22,7 @@ export const supabase = createClient(
       persistSession: false
     }
   }
-);
+) : null;
 
 // Функция для тестирования подключения
 export const testConnection = async () => {
