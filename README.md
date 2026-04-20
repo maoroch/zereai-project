@@ -291,20 +291,6 @@ npm run dev
 
 Открой http://localhost:3000 — чат работает через WebSocket со стримингом токенов.
 
----
-
-## 🛑 Устранение неполадок
-
-| Проблема | Решение |
-|---|---|
-| `documents: 0` в `/health` FastAPI | Убедись что в `zere-search-api/data/` есть `.txt` файлы |
-| WS-индикатор красный в интерфейсе | Проверь что Express запущен и `NEXT_PUBLIC_WS_URL` указан верно |
-| `Search API unavailable` в логах Express | FastAPI ещё не запустился или неверный `SEARCH_API_URL` |
-| Ошибка 401 на CRM эндпоинтах | Не передаётся JWT cookie. Выполни `POST /auth/login` сначала |
-| Медленный первый запуск FastAPI | Модель скачивается (~500 MB). Ожидай 2-5 минут |
-| `ENOENT: front-end/login.html` | Express ищет HTML-фронтенд. Если используешь Next.js — убери `app.use(express.static(...))` из `app.js` |
-
----
 
 ## 📦 Зависимости
 
