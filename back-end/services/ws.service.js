@@ -1,5 +1,6 @@
 import { WebSocketServer, WebSocket } from 'ws';
 import { searchKnowledge, formatContext } from './search.service.js';
+import { getCachedAnswer, cacheAnswer } from './llmCache.service.js';
 import env from '../config/env.js';
 import logger from '../utils/logger.js';
 
@@ -50,7 +51,22 @@ const SYSTEM_PROMPT = `Ты — университетский ассистен�
 {context}`;
 
 /**
- * Streams Groq response tokens directly to a WebSocket client.
+ * Streams a pre-cached answer token-by-token to the client.
+ * This keeps the frontend experience identical to a live Groq response.
+ */
+async function streamCachedAnswer(ws, answer) {
+  // Split into ~word-sized chunks to simulate real streaming
+  const words = answer.split(/(\s+)/);
+  for (const word of words) {
+    if (word.length === 0) continue;
+    send(ws, { type: 'token', token: word });
+    // Small artificial delay so the UI renders progressively
+    await new Promise((r) => setTimeout(r, 8));
+  }
+}
+
+/**
+ * Streams live Groq response tokens directly to a WebSocket client.
  * Returns the full assembled answer string.
  */
 async function streamGroqToSocket(ws, messages, context) {
@@ -80,7 +96,6 @@ async function streamGroqToSocket(ws, messages, context) {
 
   let fullAnswer = '';
 
-  // Parse SSE stream from Groq
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
   let buffer = '';
@@ -91,7 +106,7 @@ async function streamGroqToSocket(ws, messages, context) {
 
     buffer += decoder.decode(value, { stream: true });
     const lines = buffer.split('\n');
-    buffer = lines.pop(); // keep incomplete last line
+    buffer = lines.pop();
 
     for (const line of lines) {
       if (!line.startsWith('data: ')) continue;
@@ -148,7 +163,6 @@ async function handleMessage(ws, rawData) {
 
     const session = getOrCreateSession(sessionId ?? `anon_${Date.now()}`);
 
-    // Append user message to session history
     session.messages.push({ role: 'user', content: question.trim() });
     session.updatedAt = Date.now();
 
@@ -156,13 +170,10 @@ async function handleMessage(ws, rawData) {
       // Step 1: vector search
       send(ws, { type: 'searching' });
       const searchResults = await searchKnowledge(question, 3);
+      const searchTitles = searchResults?.map((r) => r.title) ?? [];
 
       if (searchResults?.length) {
-        send(ws, {
-          type: 'search_done',
-          count: searchResults.length,
-          titles: searchResults.map((r) => r.title),
-        });
+        send(ws, { type: 'search_done', count: searchResults.length, titles: searchTitles });
       } else {
         send(ws, { type: 'search_done', count: 0 });
         logger.warn('WS: vector search unavailable');
@@ -170,14 +181,28 @@ async function handleMessage(ws, rawData) {
 
       const context = formatContext(searchResults);
 
-      // Step 2: stream Groq answer
+      // Step 2: check Redis cache before calling Groq
       send(ws, { type: 'generating' });
 
-      // Pass only the last 10 messages as context window to Groq
-      const historyWindow = session.messages.slice(-10);
-      const answer = await streamGroqToSocket(ws, historyWindow, context);
+      const cached = await getCachedAnswer(question, searchTitles);
+      let answer;
 
-      // Persist assistant reply in session
+      if (cached) {
+        // Replay cached answer through the streaming protocol
+        send(ws, { type: 'cache_hit' });
+        await streamCachedAnswer(ws, cached);
+        answer = cached;
+        logger.info('WS: served from LLM cache', { sessionId: session.sessionId });
+      } else {
+        // No cache — call Groq with streaming
+        const historyWindow = session.messages.slice(-10);
+        answer = await streamGroqToSocket(ws, historyWindow, context);
+
+        // Persist answer in Redis for future identical questions
+        await cacheAnswer(question, searchTitles, answer);
+        logger.info('WS: answer streamed from Groq', { sessionId: session.sessionId });
+      }
+
       session.messages.push({ role: 'assistant', content: answer });
       session.updatedAt = Date.now();
 
@@ -185,9 +210,8 @@ async function handleMessage(ws, rawData) {
         type: 'done',
         sessionId: session.sessionId,
         messageCount: session.messages.length,
+        fromCache: !!cached,
       });
-
-      logger.info('WS: answer streamed', { sessionId: session.sessionId });
     } catch (err) {
       logger.error('WS: error during question handling', { message: err.message });
       send(ws, { type: 'error', message: 'Ошибка при генерации ответа' });
@@ -198,14 +222,8 @@ async function handleMessage(ws, rawData) {
   // ── get history ──
   if (type === 'get_history') {
     const session = sessions.get(sessionId);
-    if (!session) {
-      return send(ws, { type: 'history', messages: [] });
-    }
-    return send(ws, {
-      type: 'history',
-      messages: session.messages,
-      sessionId: session.sessionId,
-    });
+    if (!session) return send(ws, { type: 'history', messages: [] });
+    return send(ws, { type: 'history', messages: session.messages, sessionId: session.sessionId });
   }
 
   // ── clear history ──
@@ -219,10 +237,6 @@ async function handleMessage(ws, rawData) {
 
 // ── Server setup ──────────────────────────────────────────────────────────────
 
-/**
- * Attaches a WebSocket server to an existing HTTP server.
- * @param {import('http').Server} httpServer
- */
 export function attachWebSocketServer(httpServer) {
   const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
 
@@ -230,18 +244,15 @@ export function attachWebSocketServer(httpServer) {
     const ip = req.socket.remoteAddress;
     logger.info('WS: client connected', { ip });
 
-    // Keep-alive ping every 30s
     const pingInterval = setInterval(() => {
       if (ws.readyState === WebSocket.OPEN) ws.ping();
     }, 30_000);
 
     ws.on('message', (data) => handleMessage(ws, data));
-
     ws.on('close', () => {
       clearInterval(pingInterval);
       logger.info('WS: client disconnected', { ip });
     });
-
     ws.on('error', (err) => {
       logger.error('WS: socket error', { message: err.message });
     });

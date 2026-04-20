@@ -3,6 +3,7 @@ import gradient from 'gradient-string';
 import app from './app.js';
 import env from './config/env.js';
 import logger from './utils/logger.js';
+import { connectRedis } from './config/redis.js';
 import { attachWebSocketServer } from './services/ws.service.js';
 
 const banner = `
@@ -14,10 +15,10 @@ const banner = `
 `;
 console.log(gradient.morning(banner));
 
-// Create HTTP server manually so WS can share the same port
-const httpServer = http.createServer(app);
+// Connect Redis (non-blocking — server starts even if Redis is down)
+connectRedis();
 
-// Attach WebSocket server at ws://host/ws
+const httpServer = http.createServer(app);
 attachWebSocketServer(httpServer);
 
 httpServer.listen(env.PORT, '0.0.0.0', () => {
