@@ -2,3 +2,4 @@
 .ENV
 .env
 zere-search-api/data/
+*.zip
