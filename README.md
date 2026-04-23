@@ -317,5 +317,3 @@ npm run dev
 ## 📝 Лицензия
 
 © 2025–2026 Ilyas Salimov. Все права защищены. См. [LICENSE](./LICENSE).
-
-Telegram: [@Ilyas_ones](https://t.me/Ilyas_ones)
