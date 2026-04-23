@@ -4,70 +4,68 @@
 
 ---
 
-## Содержание
+## Table of Contents
 
-- [Сервисы монорепозитория](#-сервисы-монорепозитория)
-- [Архитектура](#-архитектура)
-- [WebSocket протокол](#-websocket-протокол)
+- [Monorepo Services](#-monorepo-services)
+- [Architecture](#-architecture)
+- [WebSocket Protocol](#-websocket-protocol)
 - [REST API](#-rest-api)
-- [Переменные окружения](#-переменные-окружения)
+- [Environment Variables](#-environment-variables)
 - [Quickstart](#-quickstart)
-- [Локальный запуск](#-локальный-запуск)
-- [Устранение неполадок](#-устранение-неполадок)
+- [Local Setup](#-local-setup)
+- [Troubleshooting](#-troubleshooting)
 
 ---
 
-## 📦 Сервисы монорепозитория
+## 📦 Monorepo Services
 
 ```
 zereAI/
 ├── zere-express/        Express.js backend — API, WebSocket, CRM
-├── zere-search-api/     FastAPI — векторный поиск по базе знаний
-└── front-end/           Next.js — чат-интерфейс пользователя
+├── zere-search-api/     FastAPI — vector search over the knowledge base
+└── front-end/           Next.js — user chat interface
 ```
 
-| Сервис | Технология | Порт | Назначение |
+| Service | Technology | Port | Purpose |
 |---|---|---|---|
 | `zere-express` | Node.js 18 / Express 5 | 8080 | REST API, WebSocket, CRM CRUD, Auth |
-| `zere-search-api` | Python 3.11 / FastAPI | 7860 | Семантический поиск, векторная модель |
-| `front-end` | Next.js 16 / React 19 | 3000 | Пользовательский чат-интерфейс |
+| `zere-search-api` | Python 3.11 / FastAPI | 7860 | Semantic search, vector model |
+| `front-end` | Next.js 16 / React 19 | 3000 | User chat interface |
 
 ---
 
-## 🏗 Архитектура
+## 🏗 Architecture
 
-### Структура Express backend
-
+### Express Backend Structure
 
 <img src="documentation/architecture/zere_ai_chatbot_architecture.svg">
 
-
 ```
 zere-express/
-├── server.js               Точка входа — HTTP + WebSocket на одном порту
-├── app.js                  Express app, CORS, middleware, маршруты
+├── server.js               Entry point — HTTP + WebSocket on a single port
+├── app.js                  Express app, CORS, middleware, routes
 │
 ├── config/
-│   ├── env.js              Все переменные окружения в одном месте
-│   ├── db.js               Supabase клиент
-│   └── constants.js        Константы: Excel-колонки, лимиты, TTL кэша
+│   ├── env.js              All environment variables in one place
+│   ├── db.js               Supabase client
+│   └── constants.js        Constants: Excel columns, limits, cache TTL
 │
-├── routes/                 Только объявление эндпоинтов
-├── controllers/            Обработка req/res, вызов сервисов
+├── routes/                 Endpoint declarations only
+├── controllers/            req/res handling, service calls
 │
 ├── services/
-│   ├── ws.service.js       WebSocket сервер, сессии, стриминг
+│   ├── ws.service.js       WebSocket server, sessions, streaming
 │   ├── groq.service.js     Groq LLM API
-│   ├── search.service.js   FastAPI vector search клиент
-│   ├── crm.service.js      Supabase CRUD (группы, студенты)
-│   └── excel.service.js    Загрузка и экспорт Excel
+│   ├── search.service.js   FastAPI vector search client
+│   ├── crm.service.js      Supabase CRUD (groups, students)
+│   └── excel.service.js    Excel upload and export
 │
 ├── middlewares/            auth, logger, validation, error handler
-├── validators/             express-validator схемы
+├── validators/             express-validator schemas
 └── utils/                  logger, apiResponse, asyncHandler, helpers
 ```
 
-### Поток запроса чатбота (WebSocket + streaming)
+### Chatbot Request Flow (WebSocket + Streaming)
 
 ```
 Browser (Next.js)
@@ -83,80 +81,80 @@ Browser (Next.js)
     │  { type: "search_done"}│◀──  [{ title, body, similarity }]
     │                        │
     │  { type: "generating" }│──▶  Groq API  (stream: true)
-    │  { type: "token", "При"}     ◀── SSE chunk
-    │  { type: "token", "вет"}     ◀── SSE chunk
+    │  { type: "token", "Hi" }     ◀── SSE chunk
+    │  { type: "token", "!" }      ◀── SSE chunk
     │       ...                         ...
     │  { type: "done" }      │
     │                        │
-    │              История сессии сохраняется в Map<sessionId, Session>
-    │              Последние 10 сообщений передаются в Groq как контекст
+    │              Session history stored in Map<sessionId, Session>
+    │              Last 10 messages passed to Groq as context
 ```
 
-### Сессии на сервере
+### Server-Side Sessions
 
-- Хранятся in-memory в `Map<sessionId, Session>`
-- Время жизни — 2 часа с последней активности
-- Сборка мусора каждые 15 минут
-- Клиент передаёт `sessionId` при каждом сообщении
+- Stored in-memory in `Map<sessionId, Session>`
+- TTL — 2 hours since last activity
+- Garbage collected every 15 minutes
+- Client sends `sessionId` with every message
 
 ---
 
-## 🔌 WebSocket протокол
+## 🔌 WebSocket Protocol
 
-Все сообщения — JSON. Соединение: `ws://host:8080/ws`
+All messages are JSON. Connection: `ws://host:8080/ws`
 
-### Клиент → Сервер
+### Client → Server
 
-| `type` | Поля | Описание |
+| `type` | Fields | Description |
 |---|---|---|
-| `question` | `question`, `sessionId` | Задать вопрос |
-| `get_history` | `sessionId` | Получить историю сессии |
-| `clear_history` | `sessionId` | Очистить сессию |
-| `ping` | — | Проверка соединения |
+| `question` | `question`, `sessionId` | Ask a question |
+| `get_history` | `sessionId` | Retrieve session history |
+| `clear_history` | `sessionId` | Clear the session |
+| `ping` | — | Check connection |
 
-### Сервер → Клиент
+### Server → Client
 
-| `type` | Поля | Описание |
+| `type` | Fields | Description |
 |---|---|---|
-| `searching` | — | Начался поиск в базе знаний |
-| `search_done` | `count`, `titles` | Поиск завершён |
-| `generating` | — | Начата генерация ответа |
-| `token` | `token` | Очередной токен ответа |
-| `done` | `sessionId`, `messageCount` | Ответ завершён |
-| `history` | `messages`, `sessionId` | История сессии |
-| `history_cleared` | — | Сессия очищена |
-| `error` | `message` | Ошибка |
-| `pong` | — | Ответ на ping |
+| `searching` | — | Knowledge base search started |
+| `search_done` | `count`, `titles` | Search completed |
+| `generating` | — | Response generation started |
+| `token` | `token` | Next response token |
+| `done` | `sessionId`, `messageCount` | Response complete |
+| `history` | `messages`, `sessionId` | Session history |
+| `history_cleared` | — | Session cleared |
+| `error` | `message` | Error |
+| `pong` | — | Response to ping |
 
 ---
 
 ## 📋 REST API
 
-### Публичные эндпоинты (без авторизации)
+### Public Endpoints (no auth required)
 
-| Метод | Путь | Описание |
+| Method | Path | Description |
 |---|---|---|
-| `GET` | `/health` | Статус сервера + статистика WS сессий |
-| `POST` | `/ai` | Fallback HTTP-эндпоинт чатбота |
-| `POST` | `/auth/login` | Вход (пароль → JWT cookie) |
+| `GET` | `/health` | Server status + WS session stats |
+| `POST` | `/ai` | Fallback HTTP chatbot endpoint |
+| `POST` | `/auth/login` | Login (password → JWT cookie) |
 
-### Защищённые эндпоинты (JWT cookie)
+### Protected Endpoints (JWT cookie required)
 
-| Метод | Путь | Описание |
+| Method | Path | Description |
 |---|---|---|
-| `GET` | `/auth/check` | Проверка токена |
-| `POST` | `/auth/logout` | Выход |
-| `GET` | `/crmCrud/students` | Список групп |
-| `POST` | `/crmCrud/students` | Создать группу |
-| `POST` | `/crmCrud/students/:id/add` | Добавить студента |
-| `POST` | `/crmCrud/students/:groupId/edit/:name` | Редактировать студента |
-| `POST` | `/crmCrud/students/:groupId/delete/:name` | Удалить студента |
-| `POST` | `/crmCrud/students/update-group/:id` | Переименовать группу |
-| `POST` | `/crmCrud/students/delete-group/:id` | Удалить группу |
-| `POST` | `/crmCrud/excelRouter/upload-groups` | Загрузить Excel |
-| `GET` | `/crmCrud/excelRouter/export-groups` | Экспорт в Excel |
+| `GET` | `/auth/check` | Verify token |
+| `POST` | `/auth/logout` | Logout |
+| `GET` | `/crmCrud/students` | List groups |
+| `POST` | `/crmCrud/students` | Create group |
+| `POST` | `/crmCrud/students/:id/add` | Add student |
+| `POST` | `/crmCrud/students/:groupId/edit/:name` | Edit student |
+| `POST` | `/crmCrud/students/:groupId/delete/:name` | Delete student |
+| `POST` | `/crmCrud/students/update-group/:id` | Rename group |
+| `POST` | `/crmCrud/students/delete-group/:id` | Delete group |
+| `POST` | `/crmCrud/excelRouter/upload-groups` | Upload Excel |
+| `GET` | `/crmCrud/excelRouter/export-groups` | Export to Excel |
 
-### Формат ответа
+### Response Format
 
 ```json
 {
@@ -169,41 +167,41 @@ Browser (Next.js)
 
 ---
 
-## ⚙️ Переменные окружения
+## ⚙️ Environment Variables
 
 ### zere-express
 
-| Переменная | Описание | Обязательна |
+| Variable | Description | Required |
 |---|---|---|
-| `PORT` | Порт сервера (по умолчанию 8080) | Нет |
-| `NODE_ENV` | `development` или `production` | Нет |
-| `SUPABASE_URL` | URL Supabase проекта | Да |
-| `SUPABASE_KEY` | Service key Supabase | Да |
-| `GROQ_API_KEY` | Ключ Groq API | Да |
-| `GROQ_MODEL` | Модель (по умолчанию `llama-3.3-70b-versatile`) | Нет |
-| `SEARCH_API_URL` | URL FastAPI (Docker: `http://fastapi:7860`) | Да |
-| `JWT_SECRET` | Секрет для JWT (`openssl rand -base64 32`) | Да |
-| `JWT_EXPIRY` | Время жизни токена (по умолчанию `24h`) | Нет |
-| `ADMIN_PASSWORD` | Пароль админ-панели | Да |
+| `PORT` | Server port (default: 8080) | No |
+| `NODE_ENV` | `development` or `production` | No |
+| `SUPABASE_URL` | Supabase project URL | Yes |
+| `SUPABASE_KEY` | Supabase service key | Yes |
+| `GROQ_API_KEY` | Groq API key | Yes |
+| `GROQ_MODEL` | Model (default: `llama-3.3-70b-versatile`) | No |
+| `SEARCH_API_URL` | FastAPI URL (Docker: `http://fastapi:7860`) | Yes |
+| `JWT_SECRET` | JWT secret (`openssl rand -base64 32`) | Yes |
+| `JWT_EXPIRY` | Token lifetime (default: `24h`) | No |
+| `ADMIN_PASSWORD` | Admin panel password | Yes |
 
 ### front-end (Next.js)
 
-| Переменная | Описание |
+| Variable | Description |
 |---|---|
-| `NEXT_PUBLIC_API_URL` | URL Express REST API (например `http://localhost:8080`) |
-| `NEXT_PUBLIC_WS_URL` | URL WebSocket (например `ws://localhost:8080`) |
+| `NEXT_PUBLIC_API_URL` | Express REST API URL (e.g. `http://localhost:8080`) |
+| `NEXT_PUBLIC_WS_URL` | WebSocket URL (e.g. `ws://localhost:8080`) |
 
 ---
 
 ## 🚀 Quickstart
 
-### Docker Compose (рекомендуется)
+### Docker Compose (recommended)
 
 ```bash
 git clone <repo-url>
 cd zereAI
 
-# Создай .env в корне
+# Create .env in the root directory
 cat > .env << EOF
 GROQ_API_KEY=your_groq_key
 JWT_SECRET=$(openssl rand -base64 32)
@@ -215,15 +213,15 @@ EOF
 docker compose up -d
 ```
 
-После запуска:
+Once running:
 
-| Интерфейс | Адрес |
+| Interface | Address |
 |---|---|
-| Чат (Next.js) | http://localhost:3000 |
+| Chat (Next.js) | http://localhost:3000 |
 | Express API + WS | http://localhost:8080 |
 | Search API | http://localhost:7860 |
 
-Проверка:
+Verify:
 ```bash
 curl http://localhost:8080/health
 docker compose ps
@@ -231,13 +229,13 @@ docker compose ps
 
 ---
 
-## 🔧 Локальный запуск
+## 🔧 Local Setup
 
-### Требования
+### Requirements
 
 - Node.js 18+, NPM 9+
 - Python 3.11+
-- Файлы `.txt` в папке `zere-search-api/data/` (база знаний)
+- `.txt` files in `zere-search-api/data/` (knowledge base)
 
 ### 1. FastAPI Search API
 
@@ -247,10 +245,10 @@ pip install -r requirements.txt
 uvicorn search_api:app --host 0.0.0.0 --port 7860
 ```
 
-При первом запуске скачается модель `paraphrase-multilingual-MiniLM-L12-v2` (~500 MB).
+On first run, the `paraphrase-multilingual-MiniLM-L12-v2` model (~500 MB) will be downloaded.
 
 ```bash
-# Проверка
+# Verify
 curl http://localhost:7860/health
 # {"status":"ok","documents":728}
 ```
@@ -259,29 +257,29 @@ curl http://localhost:7860/health
 
 ```bash
 cd zere-express
-cp .env.example .env   # заполни своими ключами
+cp .env.example .env   # fill in your keys
 npm install
 npm start
 ```
 
 ```bash
-# Проверка HTTP
+# Check HTTP
 curl http://localhost:8080/health
 
-# Проверка чатбота через REST
+# Test chatbot via REST
 curl -X POST http://localhost:8080/ai \
   -H "Content-Type: application/json" \
-  -d '{"question": "Привет"}'
+  -d '{"question": "Hello"}'
 ```
 
-WebSocket доступен на `ws://localhost:8080/ws`.
+WebSocket is available at `ws://localhost:8080/ws`.
 
 ### 3. Next.js Frontend
 
 ```bash
 cd front-end
 cp .env.example .env.local
-# Укажи в .env.local:
+# Set in .env.local:
 # NEXT_PUBLIC_API_URL=http://localhost:8080
 # NEXT_PUBLIC_WS_URL=ws://localhost:8080
 
@@ -289,24 +287,25 @@ npm install
 npm run dev
 ```
 
-Открой http://localhost:3000 — чат работает через WebSocket со стримингом токенов.
+Open http://localhost:3000 — the chat works via WebSocket with token streaming.
 
+---
 
-## 📦 Зависимости
+## 📦 Dependencies
 
 **zere-express**
 
-| Пакет | Назначение |
+| Package | Purpose |
 |---|---|
-| `express` | Веб-фреймворк |
-| `ws` | WebSocket сервер |
-| `node-fetch` | HTTP-клиент для Groq и FastAPI |
-| `express-validator` | Валидация входных данных |
-| `@supabase/supabase-js` | БД клиент |
-| `jsonwebtoken` | JWT авторизация |
-| `multer` | Загрузка файлов |
-| `xlsx` | Обработка Excel |
-| `dotenv` | Переменные окружения |
+| `express` | Web framework |
+| `ws` | WebSocket server |
+| `node-fetch` | HTTP client for Groq and FastAPI |
+| `express-validator` | Input validation |
+| `@supabase/supabase-js` | Database client |
+| `jsonwebtoken` | JWT authorization |
+| `multer` | File uploads |
+| `xlsx` | Excel processing |
+| `dotenv` | Environment variables |
 
 **zere-search-api** — FastAPI + `sentence-transformers` (`paraphrase-multilingual-MiniLM-L12-v2`)
 
@@ -314,6 +313,6 @@ npm run dev
 
 ---
 
-## 📝 Лицензия
+## 📝 License
 
-© 2025–2026 Ilyas Salimov. Все права защищены. См. [LICENSE](./LICENSE).
+© 2025–2026 Ilyas Salimov. All rights reserved. See [LICENSE](./LICENSE).
